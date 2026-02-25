@@ -6,32 +6,16 @@ Resolved design decisions and spec corrections are documented in `implementation
 
 ## Pre-flight
 
-- [ ] **Set env vars:**
-  ```bash
-  export RPC_URL=<mainnet RPC>
-  export PRIVATE_KEY=<deployer EOA key for 0x5304ebB378186b081B99dbb8B6D17d9005eA0448>
-  export ETHERSCAN_API_KEY=<for verification>
-  ```
-
 - [ ] **Contact Cork team** — request whitelist additions BEFORE deploying. Two addresses needed:
   - Deployer EOA `0x5304ebB378186b081B99dbb8B6D17d9005eA0448` — to acquire test cST via mint
   - `CorkProtectedLoopLiquidator` contract address — to call `exercise()` during liquidation
   - Cork calls: `WhitelistManager.addToMarketWhitelist(0xab4988...702a, <address>)`
 
-- [ ] **Verify IRM parameters:**
-  ```bash
-  cd evk-periphery-cork
-  node lib/evk-periphery/script/utils/calculate-irm-linear-kink.js borrow 0 4 44 80
-  ```
-  Update `IRM_SLOPE1` and `IRM_SLOPE2` in `CorkProtectedLoop.s.sol` with the output.
-
----
-
 ## Deployment Runbook
 
 Execute in order. Capture every deployed address — later steps depend on earlier ones.
 
-### Step 1 — Deploy Oracle Contracts (`euler-price-oracle-cork`)
+### Step 1 — Deploy Oracle Contracts
 
 **1a. Deploy `CorkOracleImpl`**
 
@@ -60,7 +44,7 @@ _quote = 0x0000000000000000000000000000000000000348
 
 ---
 
-### Step 2 — Deploy Collateral Vaults (`evk-periphery-cork`)
+### Step 2 — Deploy Collateral Vaults
 
 **2a. Deploy sUSDe borrow vault** via `GenericFactory.createProxy`:
 ```bash
@@ -138,16 +122,10 @@ sUsdeToken      = 0x9D39A5DE30e57443BfF2A8307A4256c8797A3497
 ### Step 4 — Run Main Deployment Script
 
 ```bash
-cd evk-periphery-cork
+cd cork-contracts
 
-export CORK_ORACLE_IMPL=0x...
-export CST_ZERO_ORACLE=0x...
-export VBUSDC_VAULT=0x...
-export CST_VAULT=0x...
-export PROTECTED_LOOP_HOOK=0x...
-export CORK_LIQUIDATOR=0x...
-
-forge script script/production/mainnet/clusters/CorkProtectedLoop.s.sol \
+# Fill in deployed addresses in .env, then:
+source .env && forge script script/CorkProtectedLoop.s.sol \
   --rpc-url $RPC_URL \
   --private-key $PRIVATE_KEY \
   --broadcast \

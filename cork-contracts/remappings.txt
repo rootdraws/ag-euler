@@ -1,0 +1,13 @@
+evk-periphery/=lib/evk-periphery/src/
+euler-price-oracle/=lib/euler-price-oracle/src/
+@solady/=lib/euler-price-oracle/lib/solady/src/
+forge-std/=lib/forge-std/src/
+evk/=lib/evk-periphery/lib/euler-vault-kit/src/
+evc/=lib/evk-periphery/lib/ethereum-vault-connector/src/
+ethereum-vault-connector/=lib/evk-periphery/lib/ethereum-vault-connector/src/
+openzeppelin-contracts/=lib/evk-periphery/lib/openzeppelin-contracts/contracts/
+@openzeppelin/contracts/=lib/evk-periphery/lib/openzeppelin-contracts/contracts/
+euler-earn/=lib/evk-periphery/lib/euler-earn/src/
+lib/evk-periphery/lib/euler-earn:@openzeppelin/=lib/evk-periphery/lib/euler-earn/lib/openzeppelin-contracts/
+lib/evk-periphery/lib/euler-earn:ethereum-vault-connector/=lib/evk-periphery/lib/euler-earn/lib/ethereum-vault-connector/src/
+lib/evk-periphery/lib/euler-price-oracle:@openzeppelin/contracts/=lib/evk-periphery/lib/euler-price-oracle/lib/openzeppelin-contracts/contracts/

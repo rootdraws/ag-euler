@@ -65,9 +65,9 @@ Nobody would rationally borrow sUSDe (yield-bearing, ~10-20% APY) against vbUSDC
 
 cST has real market value (inverse of REF depeg risk) but is priced at zero in Euler. The hook enforces 1:1 cST/REF pairing on borrow, and the vault overrides enforce it on all collateral movements, so cST coverage is guaranteed for every account with debt. Pricing cST at zero avoids double-counting.
 
-**Contract: CSTZeroOracle** ✅ BUILT — `euler-price-oracle-cork/src/adapter/cork/CSTZeroOracle.sol` (compiles)
+**Contract: CSTZeroOracle** ✅ BUILT — `cork-contracts/src/oracle/CSTZeroOracle.sol` (compiles)
 
-Source: New contract, extends `BaseAdapter` from `euler-price-oracle-cork/src/adapter/BaseAdapter.sol`.
+Source: Extends `BaseAdapter` from `euler-price-oracle` (lib dependency).
 Cannot use `FixedRateOracle` because its constructor reverts on `rate == 0`.
 
 **EulerRouter wiring:** `govSetResolvedVault(cSTVault, true)` + `govSetConfig(cST, USD, cstZeroOracle)`.
@@ -98,7 +98,7 @@ Deploy: `base = 0x1b42544f897b7ab236c111a4f800a54d94840688` (cST), `quote = 0x00
 
 ### 3.2 vbUSDC Oracle: Standard BaseAdapter
 
-**Contract: CorkOracleImpl** — `euler-price-oracle-cork/src/adapter/cork/CorkOracleImpl.sol` (compiles)
+**Contract: CorkOracleImpl** — `cork-contracts/src/oracle/CorkOracleImpl.sol` (compiles)
 
 A standard `BaseAdapter` that prices vbUSDC in USD. The EulerRouter resolves `vbUSDCVault → vbUSDC` via `convertToAssets` (1:1), then calls `CorkOracleImpl._getQuote(inAmount, vbUSDC, USD)` with real share amounts.
 
@@ -123,7 +123,7 @@ P_RA_effective_USD = min(P_vbUSDC_nav_USD, CA_backed_USD)
 CorkOracleImpl(corkPoolManager, poolId, base=vbUSDC, quote=USD, sUsdeToken, sUsdePriceOracle=routerAddress, hPool=1e18, governor)
 ```
 
-**Implementation** (see actual file at `euler-price-oracle-cork/src/adapter/cork/CorkOracleImpl.sol`):
+**Implementation** (see actual file at `cork-contracts/src/oracle/CorkOracleImpl.sol`):
 
 ```solidity
 contract CorkOracleImpl is BaseAdapter {
@@ -212,7 +212,7 @@ This is the same pattern the Yield cluster uses. The USDe/USD oracle at `0x93840
 
 ## 4. Custom Vaults: ERC4626EVCCollateralCork
 
-Source: `evk-periphery-cork/src/Vault/deployed/ERC4626EVCCollateralCork.sol` (compiles).
+Source: `cork-contracts/src/vault/ERC4626EVCCollateralCork.sol` (compiles).
 
 **Inheritance chain:**
 ```
@@ -265,7 +265,7 @@ Both need: `evc = 0x0C9a3dd6b8F28529d72d7f9cE918D493519EE383`, `permit2 = 0x0000
 
 ## 5. ProtectedLoopHook
 
-Source: `evk-periphery-cork/src/HookTarget/ProtectedLoopHook.sol` (compiles).
+Source: `cork-contracts/src/hook/ProtectedLoopHook.sol` (compiles).
 
 ### 5.1 Purpose
 
@@ -292,7 +292,7 @@ Hook fires **before** the operation executes (`initOperation` in Base.sol). `bal
 
 ### 5.3 Base Contract: `BaseHookTarget`
 
-Source: `evk-periphery-cork/src/HookTarget/BaseHookTarget.sol` (42 lines).
+Source: `cork-contracts/lib/evk-periphery/src/HookTarget/BaseHookTarget.sol` (42 lines).
 
 Provides:
 - `constructor(address _eVaultFactory)` -- stores the EVault factory
@@ -341,8 +341,8 @@ function _normalizedEqual(uint256 refShares, uint256 cstShares) internal pure re
 
 ## 6. Liquidation: CorkProtectedLoopLiquidator
 
-Source: `evk-periphery-cork/src/Liquidator/CorkProtectedLoopLiquidator.sol` (compiles).
-Reference implementation: `SBuidlLiquidator` at `evk-periphery-cork/src/Liquidator/SBLiquidator.sol`.
+Source: `cork-contracts/src/liquidator/CorkProtectedLoopLiquidator.sol` (compiles).
+Reference implementation: `SBuidlLiquidator` at `cork-contracts/lib/evk-periphery/src/Liquidator/SBLiquidator.sol`.
 
 The `CustomLiquidatorBase` pattern:
 - Owner registers which collateral vaults need custom liquidation logic
@@ -501,26 +501,27 @@ Acquire sUSDe via Ethena or DEX swap.
 
 ## 11. Source Files Reference
 
+All Cork contracts live in `cork-contracts/` -- a standalone Foundry project. Upstream dependencies are in `cork-contracts/lib/`.
+
 | Component | File | Status |
 |-----------|------|--------|
-| CorkOracleImpl (standard BaseAdapter) | `euler-price-oracle-cork/src/adapter/cork/CorkOracleImpl.sol` | ✅ Compiles |
-| CSTZeroOracle | `euler-price-oracle-cork/src/adapter/cork/CSTZeroOracle.sol` | ✅ Compiles |
-| CorkCustomRiskManagerOracle | `euler-price-oracle-cork/src/adapter/cork/CorkCustomRiskManagerOracle.sol` | NOT USED (historical POC) |
-| BaseAdapter | `euler-price-oracle-cork/src/adapter/BaseAdapter.sol` | Exists |
-| EulerRouter | `euler-price-oracle-cork/src/EulerRouter.sol` | Exists |
-| IPriceOracle | `euler-price-oracle-cork/src/interfaces/IPriceOracle.sol` | Exists |
-| ERC4626EVCCollateralCork | `evk-periphery-cork/src/Vault/deployed/ERC4626EVCCollateralCork.sol` | ✅ Pairing overrides, compiles |
-| ProtectedLoopHook | `evk-periphery-cork/src/HookTarget/ProtectedLoopHook.sol` | ✅ Borrow-only, compiles |
-| CorkProtectedLoopLiquidator | `evk-periphery-cork/src/Liquidator/CorkProtectedLoopLiquidator.sol` | ✅ SafeERC20, compiles |
-| CorkProtectedLoop deployment script | `evk-periphery-cork/script/production/mainnet/clusters/CorkProtectedLoop.s.sol` | ✅ Compiles |
-| BaseHookTarget | `evk-periphery-cork/src/HookTarget/BaseHookTarget.sol` | Exists |
-| CustomLiquidatorBase (liquidator template) | `evk-periphery-cork/src/Liquidator/CustomLiquidatorBase.sol` | Exists |
-| SBuidlLiquidator (reference impl) | `evk-periphery-cork/src/Liquidator/SBLiquidator.sol` | Exists (reference) |
-| ERC4626EVCCollateralSecuritize (constructor reference) | `evk-periphery-cork/src/Vault/deployed/ERC4626EVCCollateralSecuritize.sol` | Exists |
-| EVault hook invocation | `euler-vault-kit/src/EVault/shared/Base.sol` | Exists |
-| OP constants | `euler-vault-kit/src/EVault/shared/Constants.sol` | Exists |
-| IEthereumVaultConnector (EVC interface) | `ethereum-vault-connector/src/interfaces/IEthereumVaultConnector.sol` | Exists |
-| IRMLinearKink (interest rate model) | `euler-vault-kit/src/InterestRateModels/IRMLinearKink.sol` | Exists |
+| CorkOracleImpl (standard BaseAdapter) | `cork-contracts/src/oracle/CorkOracleImpl.sol` | ✅ Compiles |
+| CSTZeroOracle | `cork-contracts/src/oracle/CSTZeroOracle.sol` | ✅ Compiles |
+| ERC4626EVCCollateralCork | `cork-contracts/src/vault/ERC4626EVCCollateralCork.sol` | ✅ Pairing overrides, compiles |
+| ProtectedLoopHook | `cork-contracts/src/hook/ProtectedLoopHook.sol` | ✅ Borrow-only, compiles |
+| CorkProtectedLoopLiquidator | `cork-contracts/src/liquidator/CorkProtectedLoopLiquidator.sol` | ✅ SafeERC20, compiles |
+| CorkProtectedLoop deployment script | `cork-contracts/script/CorkProtectedLoop.s.sol` | ✅ Compiles |
+| BaseAdapter (oracle base) | `cork-contracts/lib/euler-price-oracle/src/adapter/BaseAdapter.sol` | Lib dep |
+| EulerRouter | `cork-contracts/lib/euler-price-oracle/src/EulerRouter.sol` | Lib dep |
+| IPriceOracle | `cork-contracts/lib/euler-price-oracle/src/interfaces/IPriceOracle.sol` | Lib dep |
+| BaseHookTarget | `cork-contracts/lib/evk-periphery/src/HookTarget/BaseHookTarget.sol` | Lib dep |
+| CustomLiquidatorBase (liquidator template) | `cork-contracts/lib/evk-periphery/src/Liquidator/CustomLiquidatorBase.sol` | Lib dep |
+| SBuidlLiquidator (reference impl) | `cork-contracts/lib/evk-periphery/src/Liquidator/SBLiquidator.sol` | Lib dep (reference) |
+| ERC4626EVCCollateralCapped (vault parent) | `cork-contracts/lib/evk-periphery/src/Vault/implementation/ERC4626EVCCollateralCapped.sol` | Lib dep |
+| EVault hook invocation | `cork-contracts/lib/evk-periphery/lib/euler-vault-kit/src/EVault/shared/Base.sol` | Lib dep |
+| OP constants | `cork-contracts/lib/evk-periphery/lib/euler-vault-kit/src/EVault/shared/Constants.sol` | Lib dep |
+| IEthereumVaultConnector (EVC interface) | `cork-contracts/lib/evk-periphery/lib/ethereum-vault-connector/src/interfaces/IEthereumVaultConnector.sol` | Lib dep |
+| IRMLinearKink (interest rate model) | `cork-contracts/lib/evk-periphery/lib/euler-vault-kit/src/InterestRateModels/IRMLinearKink.sol` | Lib dep |
 | CorkPoolManager | `phoenix/contracts/core/CorkPoolManager.sol` | Exists (Cork repo) |
 | MathHelper (swap math) | `phoenix/contracts/libraries/MathHelper.sol` | Exists (Cork repo) |
 | IPoolShare (cST interface) | `phoenix/contracts/interfaces/IPoolShare.sol` | Exists |
