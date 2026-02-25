@@ -49,6 +49,18 @@ Nobody would rationally borrow sUSDe (yield-bearing, ~10-20% APY) against vbUSDC
 | sequenceRegistry | `0xEADDD21618ad5Deb412D3fD23580FD461c106B54` |
 | USDe/USD Oracle (ChainlinkInfrequentOracle) | `0x93840A424aBc32549809Dd0Bc07cEb56E137221C` |
 
+| Deployed Contracts (Mainnet) | Address |
+|------------------------------|---------|
+| EulerRouter | `0x693B992a576F1260fbD9392389262c2d6D357C3c` |
+| CorkOracleImpl | `0xF9d813db87F528bb5b5Ae28567702488f8Bd34FC` |
+| CSTZeroOracle | `0x81FfF8C68e6ea10d782d738a3C71110F876C3C06` |
+| sUSDe Borrow Vault | `0x53FDab35Fd3aA26577bAc29f098084fCBAbE502f` |
+| vbUSDC Collateral Vault | `0xadF7aFDAdaA4cBb0aDAf47C7fD7a9789C0128C6b` |
+| cST Collateral Vault | `0xd0f8aC1782d5B80f722bd6aCA4dEf8571A9ddA4c` |
+| ProtectedLoopHook | `0x677c2b56E21dDD0851242e62024D8905907db72c` |
+| IRMLinearKink | `0x09f8E395c9845A3B5007DB154920bB28727246a3` |
+| CorkProtectedLoopLiquidator | `0x1e95cC20ad3917ee523c677faa7AB3467f885CFe` |
+
 | Cork Pool Parameters | Value |
 |----------------------|-------|
 | rateMin | 0.7607 (1 vbUSDC = 0.76 sUSDe minimum) |
@@ -398,7 +410,7 @@ When cST approaches expiry, a RolloverOperator must swap cST_old for cST_new wit
 
 ## 8. Cluster Configuration
 
-All values confirmed for demo deployment:
+All values as deployed on mainnet:
 
 | Parameter | Value | Notes |
 |-----------|-------|-------|
@@ -407,63 +419,37 @@ All values confirmed for demo deployment:
 | vbUSDC liquidation LTV | 85% | 5% buffer above borrow LTV |
 | cST borrow LTV | 0% | Zero-valued oracle |
 | cST liquidation LTV | 0% | Zero-valued oracle |
-| sUSDe supply cap | 1,000,000 | 1M sUSDe |
-| vbUSDC supply cap | 1,000,000 | 1M vbUSDC |
-| cST supply cap | 1,000,000 | 1M cST |
-| sUSDe borrow cap | 800,000 | 800k sUSDe |
+| Supply cap | unlimited (`AmountCap=0`) | `AmountCap(0)` resolves to `type(uint256).max`. Tighten before full launch. |
+| Borrow cap | unlimited (`AmountCap=0`) | Same encoding. Tighten before full launch. |
 | IRM base rate | 0% | 0 at zero utilization |
 | IRM kink | 80% | Target utilization |
-| IRM slope1 | 5% | ~4% at kink (0 + 80% * 5% = 4%) |
-| IRM slope2 | 200% | Steep above kink to discourage over-borrowing |
+| IRM APY at kink | ~4% | Computed via `calculate-irm-linear-kink.js borrow 0 4 44 80` |
+| IRM APY at max | ~44% | Steep above kink to discourage over-borrowing |
+| IRM raw params | base=0, slope1=361718388, slope2=12005010303, kink=3435973836 | Deployed values in `IRMLinearKink` |
+| Interest fee | vault default (10%) | `ProtocolConfig.minInterestFee = 0.1e4`. Cannot set below this floor. |
+| Max liquidation discount | 15% (`0.15e4`) | |
+| Liquidation cool-off | 1 second | |
 | Governor | `0x5304ebB378186b081B99dbb8B6D17d9005eA0448` | Deployer EOA. Transfer to multisig post-demo via `setGovernorAdmin` / `transferGovernance`. |
 
 ---
 
-## 9. Deployment Sequence
+## 9. Deployment Sequence — COMPLETE ✓
 
-**Phase 1: Oracle Router (deploy first -- CorkOracleImpl needs its address)**
-1. USDe/USD Chainlink adapter: **confirmed reusable** at `0x93840A424aBc32549809Dd0Bc07cEb56E137221C` (name: `ChainlinkInfrequentOracle`, base=USDe, quote=USD, returns ~$0.999/USDe)
-2. Deploy `EulerRouter` (governor = deployer EOA) → get router address
+Executed via 7 sequential Foundry scripts in `cork-contracts/script/`. Each script reads prior addresses from `.env` and logs the new address to paste in before running the next.
 
-**Phase 2: Oracles**
-3. Deploy `CorkOracleImpl` (standard BaseAdapter, constructor: corkPoolManager, poolId, base=vbUSDC, quote=USD, sUsdeToken, sUsdePriceOracle=**router address from step 2**, hPool=1e18, governor)
-4. Deploy `CSTZeroOracle` (base=cST `0x1b42...`, quote=USD `0x...0348`)
+| Script | What it does | Key output |
+|--------|--------------|------------|
+| `01_DeployRouter.s.sol` | Deploy `EulerRouter` | `EULER_ROUTER` |
+| `02_DeployOracles.s.sol` | Deploy `CorkOracleImpl` + `CSTZeroOracle` | `CORK_ORACLE_IMPL`, `CST_ZERO_ORACLE` |
+| `03_DeployVaults.s.sol` | Deploy sUSDe borrow vault + both collateral vaults | `SUSDE_BORROW_VAULT`, `VBUSDC_VAULT`, `CST_VAULT` |
+| `04_WireRouter.s.sol` | `govSetResolvedVault` + `govSetConfig` for all pairs | — |
+| `05_DeployHookAndWire.s.sol` | Deploy hook, `setHookConfig`, `setPairedVault` both ways | `PROTECTED_LOOP_HOOK` |
+| `06_ConfigureCluster.s.sol` | Deploy IRM, set LTVs, caps, discount, cool-off | — |
+| `07_DeployLiquidator.s.sol` | Deploy `CorkProtectedLoopLiquidator` | `CORK_LIQUIDATOR` |
 
-**Phase 3: Vaults (order matters)**
-5. Deploy sUSDe borrow vault (standard EVK via factory) → get its address
-6. Deploy `ERC4626EVCCollateralCork` for vbUSDC (borrowVault = step 5 address, isRefVault = true)
-7. Deploy `ERC4626EVCCollateralCork` for cST (borrowVault = step 5 address, isRefVault = false)
+**USDe/USD oracle** (`0x93840A424aBc32549809Dd0Bc07cEb56E137221C`) is a pre-existing `ChainlinkInfrequentOracle` — no deployment needed, wired in `04_WireRouter`.
 
-**Phase 4: Wire Oracle Router**
-
-Collateral vaults must be set as `resolvedVault` so the router can resolve vault shares to underlying tokens via `convertToAssets` before hitting the token-level oracle.
-
-8a. `router.govSetResolvedVault(vbUSDCVault, true)` → vbUSDCVault resolves to vbUSDC (1:1)
-8b. `router.govSetConfig(vbUSDC, USD, address(corkOracleImpl))` → CorkOracleImpl (standard BaseAdapter)
-9a. `router.govSetResolvedVault(cSTVault, true)` → cSTVault resolves to cST
-9b. `router.govSetConfig(cST, USD, address(cstZeroOracle))` → CSTZeroOracle
-10. `router.govSetResolvedVault(sUSDe, true)` → sUSDe is ERC4626 wrapping USDe
-11. `router.govSetConfig(USDe, USD, 0x93840A424aBc32549809Dd0Bc07cEb56E137221C)` → USDe/USD Chainlink adapter
-
-**Phase 5: Hook + Pairing**
-12. Deploy `ProtectedLoopHook` (eVaultFactory, evc, refVault=step 6, cstVault=step 7, borrowVault=step 5, cstToken, cstExpiry=1776686400)
-13. `sUSDeBorrowVault.setHookConfig(hookAddress, 64)` → OP_BORROW only
-14. `vbUSDCVault.setPairedVault(cSTVault)` → REF vault pairing wired
-15. `cSTVault.setPairedVault(vbUSDCVault)` → cST vault pairing wired
-
-Collateral vault withdraw/deposit protections are handled by `_withdraw`/`_deposit` overrides in the vault contract, not by the hook.
-
-**Phase 6: Cluster Config**
-16. Deploy IRM, set on borrow vault
-17. Set LTVs for vbUSDC→sUSDe (80% borrow / 85% liquidation) and cST→sUSDe (0%)
-18. Set supply caps, borrow caps, liquidation discount, cool-off time, interest fee
-
-**Phase 7: Liquidator**
-19. Deploy `CorkProtectedLoopLiquidator` (evc, owner, corkPoolManager, poolId, refVault, cstVault, vbUSDC, cstToken, sUsdeToken)
-
-**Phase 8: Frontend**
-20. Update cork-labels (`products.json`, `vaults.json`, `entities.json`)
-21. Push to GitHub, verify on `cork.alphagrowth.fun`
+All contracts verified on Etherscan. Deployed addresses in §2.
 
 ---
 
@@ -505,12 +491,12 @@ All Cork contracts live in `cork-contracts/` -- a standalone Foundry project. Up
 
 | Component | File | Status |
 |-----------|------|--------|
-| CorkOracleImpl (standard BaseAdapter) | `cork-contracts/src/oracle/CorkOracleImpl.sol` | ✅ Compiles |
-| CSTZeroOracle | `cork-contracts/src/oracle/CSTZeroOracle.sol` | ✅ Compiles |
-| ERC4626EVCCollateralCork | `cork-contracts/src/vault/ERC4626EVCCollateralCork.sol` | ✅ Pairing overrides, compiles |
-| ProtectedLoopHook | `cork-contracts/src/hook/ProtectedLoopHook.sol` | ✅ Borrow-only, compiles |
-| CorkProtectedLoopLiquidator | `cork-contracts/src/liquidator/CorkProtectedLoopLiquidator.sol` | ✅ SafeERC20, compiles |
-| CorkProtectedLoop deployment script | `cork-contracts/script/CorkProtectedLoop.s.sol` | ✅ Compiles |
+| CorkOracleImpl (standard BaseAdapter) | `cork-contracts/src/oracle/CorkOracleImpl.sol` | ✅ Deployed + verified |
+| CSTZeroOracle | `cork-contracts/src/oracle/CSTZeroOracle.sol` | ✅ Deployed + verified |
+| ERC4626EVCCollateralCork | `cork-contracts/src/vault/ERC4626EVCCollateralCork.sol` | ✅ Deployed ×2 (vbUSDC + cST) |
+| ProtectedLoopHook | `cork-contracts/src/hook/ProtectedLoopHook.sol` | ✅ Deployed + verified |
+| CorkProtectedLoopLiquidator | `cork-contracts/src/liquidator/CorkProtectedLoopLiquidator.sol` | ✅ Deployed + verified |
+| Deployment scripts (×7) | `cork-contracts/script/01_` … `07_*.s.sol` | ✅ All executed |
 | BaseAdapter (oracle base) | `cork-contracts/lib/euler-price-oracle/src/adapter/BaseAdapter.sol` | Lib dep |
 | EulerRouter | `cork-contracts/lib/euler-price-oracle/src/EulerRouter.sol` | Lib dep |
 | IPriceOracle | `cork-contracts/lib/euler-price-oracle/src/interfaces/IPriceOracle.sol` | Lib dep |

@@ -9,6 +9,5 @@ optimizer_runs = 20_000
 
 fs_permissions = [{ access = "read-write", path = "./" }]
 
-# Pass --etherscan-api-key on the CLI, or set ETHERSCAN_API_KEY in .env and uncomment:
-# [etherscan]
-# mainnet = { chain = "1", key = "${ETHERSCAN_API_KEY}", url = "https://api.etherscan.io/api" }
+[etherscan]
+mainnet = { chain = "1", key = "${ETHERSCAN_API_KEY}", url = "https://api.etherscan.io/api" }

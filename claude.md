@@ -429,20 +429,23 @@ The entities.json in each labels repo should include AG, Euler, and the partner 
 
 Read `implementation.md` in the repo root FIRST. It is the complete implementation spec with all addresses, formulas, corrected code, and deployment sequence. Read `cork-docs/cork-euler.md` for the original Cork/Euler design spec. Read `TODO.md` for deployment runbook and remaining work. Read `firstprinciples.md` for the FP-1 investigation (balanceOf encoding trick — confirmed broken, resolved).
 
-### Current Status: All Contracts Written and Compiling
+### Current Status: All Contracts Deployed to Mainnet ✓
 
-All six items are done. Do NOT rewrite them. Read the existing files before touching anything.
+Do NOT rewrite these. Read the existing files before touching anything.
 
-All contracts live in `cork-contracts/` -- a standalone Foundry project with only the deps Cork needs. The old `euler-price-oracle-cork/` and `evk-periphery-cork/` repos have been deleted.
+All contracts live in `cork-contracts/` -- a standalone Foundry project with only the deps Cork needs.
 
-| Contract | File | Status |
+| Contract | File | Mainnet Address |
 |---|---|---|
-| CorkOracleImpl | `cork-contracts/src/oracle/CorkOracleImpl.sol` | Standard BaseAdapter, compiles |
-| CSTZeroOracle | `cork-contracts/src/oracle/CSTZeroOracle.sol` | Standard BaseAdapter, compiles |
-| ERC4626EVCCollateralCork | `cork-contracts/src/vault/ERC4626EVCCollateralCork.sol` | Pairing overrides, compiles |
-| ProtectedLoopHook | `cork-contracts/src/hook/ProtectedLoopHook.sol` | Borrow-only hook, compiles |
-| CorkProtectedLoopLiquidator | `cork-contracts/src/liquidator/CorkProtectedLoopLiquidator.sol` | SafeERC20, compiles |
-| CorkProtectedLoop.s.sol | `cork-contracts/script/CorkProtectedLoop.s.sol` | 8-phase script, compiles |
+| CorkOracleImpl | `cork-contracts/src/oracle/CorkOracleImpl.sol` | `0xF9d813db87F528bb5b5Ae28567702488f8Bd34FC` |
+| CSTZeroOracle | `cork-contracts/src/oracle/CSTZeroOracle.sol` | `0x81FfF8C68e6ea10d782d738a3C71110F876C3C06` |
+| ERC4626EVCCollateralCork (vbUSDC) | `cork-contracts/src/vault/ERC4626EVCCollateralCork.sol` | `0xadF7aFDAdaA4cBb0aDAf47C7fD7a9789C0128C6b` |
+| ERC4626EVCCollateralCork (cST) | `cork-contracts/src/vault/ERC4626EVCCollateralCork.sol` | `0xd0f8aC1782d5B80f722bd6aCA4dEf8571A9ddA4c` |
+| ProtectedLoopHook | `cork-contracts/src/hook/ProtectedLoopHook.sol` | `0x677c2b56E21dDD0851242e62024D8905907db72c` |
+| CorkProtectedLoopLiquidator | `cork-contracts/src/liquidator/CorkProtectedLoopLiquidator.sol` | `0x1e95cC20ad3917ee523c677faa7AB3467f885CFe` |
+| EulerRouter | (lib dep, deployed) | `0x693B992a576F1260fbD9392389262c2d6D357C3c` |
+| IRMLinearKink | (lib dep, deployed) | `0x09f8E395c9845A3B5007DB154920bB28727246a3` |
+| sUSDe Borrow Vault | (EVK factory, deployed) | `0x53FDab35Fd3aA26577bAc29f098084fCBAbE502f` |
 
 ### Critical Architectural Facts — Read Before Touching Anything
 
@@ -479,8 +482,8 @@ router.govSetResolvedVault(cSTVault, true);     // resolves vault shares to cST 
 ```
 Without these, the router cannot route `vbUSDCVault/USD` or `cSTVault/USD` queries. The router calls `convertToAssets` on the vault, gets the underlying token amount, then hits the token-level oracle (CorkOracleImpl for vbUSDC, CSTZeroOracle for cST).
 
-**6. The deployment script is a standalone `Script.sol`, NOT based on `ManageCluster.s.sol`.**
-The oracle contracts (CorkOracleImpl, CSTZeroOracle) must be deployed separately first, then their addresses fed into the main script as env vars. The script is at `cork-contracts/script/CorkProtectedLoop.s.sol`.
+**6. Deployment used 7 sequential scripts, NOT a monolithic `ManageCluster.s.sol`.**
+Scripts are at `cork-contracts/script/01_DeployRouter.s.sol` through `07_DeployLiquidator.s.sol`. Each reads prior addresses from `.env` and logs the next address to paste in. All have been executed. See `README.md` for the full sequence.
 
 **7. `swapFee(poolId)` scale is NOT traditional bps. It uses `1e18 = 1% = 100 bps`.**
 So `5e16 = 0.05% = 5 bps`. The formula `feeBps * 1e16 / 1e18 = feeBps / 100` converts to WAD fraction. This looks wrong but is correct. Confirmed against `MathHelper.calculatePercentageFee` which divides by `100e18`.
@@ -497,7 +500,7 @@ The collateral vaults (`ERC4626EVCCollateral`) do not expose `setHookConfig`. Th
 - Rollover exception not implemented.
 These cannot be built until Cork delivers `CorkSeriesRegistry`.
 
-### Cork Whitelist — Hard External Dependency (Act Before Deploying)
+### Cork Whitelist — Hard External Dependency
 
 Every external function on CorkPoolManager is gated by `_onlyWhitelisted(poolId, _msgSender())`. Before any on-chain testing is possible:
 1. Deployer EOA `0x5304ebB378186b081B99dbb8B6D17d9005eA0448` must be whitelisted to mint test cST
@@ -511,9 +514,10 @@ All Cork contracts live in `cork-contracts/`, a standalone Foundry project. No s
 
 ```bash
 cd cork-contracts
-forge build              # compiles all 5 contracts + script cleanly
-source .env && forge script script/CorkProtectedLoop.s.sol --rpc-url $RPC_URL --private-key $PRIVATE_KEY  # dry-run
+forge build              # compiles all contracts cleanly
 ```
+
+Deployment used 7 sequential scripts (`01_DeployRouter.s.sol` → `07_DeployLiquidator.s.sol`). All have been executed on mainnet. See `README.md` for addresses and script sequence.
 
 The project has two lib dependencies (`evk-periphery` and `euler-price-oracle`) with only the submodules Cork actually imports initialized. Unused upstream submodules (LayerZero, reward-streams, fee-flow, etc.) are empty and never compiled.
 
