@@ -1,9 +1,6 @@
 [submodule "euler-labels"]
 	path = euler-labels
 	url = https://github.com/euler-xyz/euler-labels.git
-[submodule "euler-lite"]
-	path = euler-lite
-	url = https://github.com/euler-xyz/euler-lite.git
 [submodule "euler-vault-kit"]
 	path = euler-vault-kit
 	url = https://github.com/euler-xyz/euler-vault-kit.git
