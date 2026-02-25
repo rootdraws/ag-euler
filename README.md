@@ -2,7 +2,7 @@
 
 ## Source of Truth
 
-- **Full spec, addresses, formulas, architecture:** `implementation.md`
+- **Full spec, addresses, formulas, architecture:** `cork-contracts/cork-implementation.md`
 - **Deployment status + remaining tasks:** `TODO.md`
 - **Frontend pipeline + partner deployments:** `CLAUDE.md`
 
@@ -51,4 +51,4 @@ source .env && forge script script/07_DeployLiquidator.s.sol ...
 | ProtectedLoopHook | `cork-contracts/src/hook/ProtectedLoopHook.sol` |
 | CorkProtectedLoopLiquidator | `cork-contracts/src/liquidator/CorkProtectedLoopLiquidator.sol` |
 
-Do not rewrite these. Read the existing files and `implementation.md` before touching anything.
+Do not rewrite these. Read the existing files and `cork-contracts/cork-implementation.md` before touching anything.

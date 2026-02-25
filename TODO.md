@@ -1,6 +1,6 @@
 # Cork Protected Loop — TODO
 
-Resolved design decisions and spec corrections are documented in `implementation.md`. This file tracks only: what must still be done, and how to do it.
+Resolved design decisions and spec corrections are documented in `cork-contracts/cork-implementation.md`. This file tracks only: what must still be done, and how to do it.
 
 ---
 

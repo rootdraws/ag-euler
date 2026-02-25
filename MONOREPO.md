@@ -37,7 +37,7 @@ AG-Euler/
 ├── euler-lite/        ← frontend dev copy, pushed to rootdraws/euler-lite
 ├── euler-vault-scripts/
 ├── phoenix/           ← Cork Protocol contracts (read-only reference)
-├── implementation.md  ← Cork deployment spec
+├── cork-contracts/cork-implementation.md  ← Cork deployment spec
 ├── TODO.md            ← Cork post-deployment tasks
 ├── claude.md          ← AG-wide frontend pipeline + Cork context
 ├── README.md

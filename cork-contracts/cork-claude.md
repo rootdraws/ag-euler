@@ -2,7 +2,7 @@
 
 ### The Spec
 
-Read `implementation.md` in the repo root FIRST. It is the complete implementation spec with all addresses, formulas, corrected code, and deployment sequence. Read `cork-docs/cork-euler.md` for the original Cork/Euler design spec. Read `TODO.md` for deployment runbook and remaining work. Read `firstprinciples.md` for the FP-1 investigation (balanceOf encoding trick — confirmed broken, resolved).
+Read `cork-contracts/cork-implementation.md` in the repo root FIRST. It is the complete implementation spec with all addresses, formulas, corrected code, and deployment sequence. Read `cork-docs/cork-euler.md` for the original Cork/Euler design spec. Read `TODO.md` for deployment runbook and remaining work. Read `firstprinciples.md` for the FP-1 investigation (balanceOf encoding trick — confirmed broken, resolved).
 
 ### Current Status: All Contracts Deployed to Mainnet ✓
 
