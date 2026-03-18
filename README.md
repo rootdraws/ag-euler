@@ -14,6 +14,7 @@ git clone --recurse-submodules https://github.com/rootdraws/ag-euler.git
 |---|---|---|---|---|
 | Cork Protocol | [cork.alphagrowth.fun](https://cork.alphagrowth.fun) | [cork-contracts/](cork-contracts/) | [ag-euler-lite-cork](https://github.com/rootdraws/ag-euler-lite-cork) | Live (Tenderly demo) |
 | Balancer | [balancer.alphagrowth.fun](https://balancer.alphagrowth.fun) | [balancer-contracts/](balancer-contracts/) | [ag-euler-lite-balancer](https://github.com/rootdraws/ag-euler-lite-balancer) | **Live** |
+| Origin Protocol | [origin.alphagrowth.fun](https://origin.alphagrowth.fun) | [origin-contracts/](origin-contracts/) | [ag-euler-lite-origin](https://github.com/rootdraws/ag-euler-lite-origin) | **Live** |
 
 ---
 
@@ -35,6 +36,11 @@ AG-Euler/
 │   ├── script/              ← 9 deployment scripts + test scripts
 │   └── balancer-claude.md
 ├── euler-lite-balancer/     ← Balancer frontend (separate repo → rootdraws/ag-euler-lite-balancer)
+├── origin-contracts/        ← Origin ARM x Euler deployment (Ethereum mainnet)
+│   ├── script/              ← 7 deployment scripts (IRM, router, vaults, oracle, cluster, fee receiver)
+│   └── origin-arm-euler-spec.md
+├── origin-labels/           ← Origin labels (local copy → rootdraws/ag-euler-origin-labels)
+├── euler-lite-origin/       ← Origin frontend (separate repo → rootdraws/ag-euler-lite-origin)
 ├── reference/               ← upstream read-only repos (submodules)
 │   ├── ethereum-vault-connector/
 │   ├── euler-interfaces/
@@ -60,6 +66,7 @@ AG-Euler/  (this repo)                ← all development happens here
 rootdraws/ag-euler-lite               ← shared frontend, Vercel watches it
 rootdraws/ag-euler-lite-cork          ← Cork-specific frontend (custom dual-collateral borrow flow)
 rootdraws/ag-euler-lite-balancer      ← Balancer-specific frontend (BPT zap, Enso/adapter multiply)
+rootdraws/ag-euler-lite-origin        ← Origin-specific frontend (ARM deposit adapter multiply)
 rootdraws/ag-euler-<partner>-labels   ← one per partner, fetched at runtime
 ```
 
@@ -74,6 +81,9 @@ rootdraws/ag-euler-lite-cork
 
 rootdraws/ag-euler-lite-balancer
   └── Vercel Project: balancer.alphagrowth.fun → Balancer env vars
+
+rootdraws/ag-euler-lite-origin
+  └── Vercel Project: origin.alphagrowth.fun  → Origin env vars
 ```
 
 **Default model:** Changing env vars in Vercel morphs the shared frontend completely — no per-partner repo needed.

@@ -169,6 +169,51 @@ Requires prior ERC20 approve: to Enso Router for pools 1-3, to the adapter addre
   - Quote generation mismatch (the `multiplyQuote` in `useLoopZap.ts` may not match the actual BPT amount received)
   - Sub-account resolution issue between Tx 1 and Tx 2
 
+---
+
+## Contract Verification (Completed March 2026)
+
+All contracts verified on MonadScan via Etherscan V2 API. See lesson #23 for the verification workflow.
+
+### Source-verified contracts
+
+| Contract | Address |
+|---|---|
+| EVault Implementation | `0xef17750D3a162E28a302E266c474ff8989d60ECD` |
+| EulerRouter | `0x77C3b512d1d9E1f22EeCde73F645Da14f49CeC73` |
+| ChainlinkOracle (Pool 1) | `0x447B8A9F8438Fd85058c5d38a4c3Ac74A1ce1C82` |
+| ChainlinkOracle (Pool 2) | `0xD84D227b2965a011561FDD6C2782bA74d4551c51` |
+| ChainlinkOracle (Pool 3) | `0x3e22B269BAE7C670676df9314F15CE65aDAeBb80` |
+| ChainlinkOracle (Pool 4) | `0x4E06DcA43132f457B91B8b624aE562Af0dE2d305` |
+| BPT Adapter Pool 1 | `0xC904aAB60824FC8225F6c8843897fFba14c8Bf98` |
+| BPT Adapter Pool 4 | `0x8753eCb44370fcd4068Dd5BA1BE5bdd85122c832` |
+
+### Source-verified vault proxies (BeaconProxy)
+
+All 6 vault proxies source-verified as `BeaconProxy` (from `euler-vault-kit/src/GenericFactory/BeaconProxy.sol`). MonadScan auto-detects the proxy pattern and links to the EVault implementation, showing Read/Write as Proxy on each contract's tab.
+
+Verified using `forge verify-contract` with `--verifier-url` (see lesson #23). Constructor args encode `abi.encodePacked(bytes4(0), asset, oracle, unitOfAccount)` as an ABI-encoded `bytes` parameter.
+
+| Vault | Address |
+|---|---|
+| AUSD Borrow Vault | `0x438cedcE647491B1d93a73d491eC19A50194c222` |
+| WMON Borrow Vault | `0x75B6C392f778B8BCf9bdB676f8F128b4dD49aC19` |
+| Pool 1 Vault | `0x5795130BFb9232C7500C6E57A96Fdd18bFA60436` |
+| Pool 2 Vault | `0x578c60e6Df60336bE41b316FDE74Aa3E2a4E0Ea5` |
+| Pool 3 Vault | `0x6660195421557BC6803e875466F99A764ae49Ed7` |
+| Pool 4 Vault | `0x175831aF06c30F2EA5EA1e3F5EBA207735Eb9F92` |
+
+### Already verified by Euler team
+
+| Contract | Address |
+|---|---|
+| GenericFactory (EVault Factory) | `0xba4Dd672062dE8FeeDb665DD4410658864483f1E` |
+
+### Not verified (factory-deployed singletons, source not in our repo)
+
+KinkIRM x3 (`0x2CB88c8E...`, `0x2B23EC08...`, `0x36aF0910...`) — deployed by KinkIRMFactory.
+LP Oracles x4 (`0x16E9E2fF...`, `0x388A1149...`, `0x2AF160Be...`, `0x6A4B6AF2...`) — deployed by StableLPOracleFactory.
+
 ### Key files
 
 | File | Purpose |
@@ -302,3 +347,62 @@ AUSD (`0x00000000eFE302BEAA2b3e6e1b18d08D69a9012a`) uses 6 decimals. Treating it
 ### 22. Enso routes need explicit ERC20 approvals
 
 When using Enso `/route` with `fromAddress=userWallet`, the user must have approved the input token to Enso's Router contract before the transaction. The frontend must check allowance and prompt for approval if insufficient. Same applies to the adapter — user must approve to the adapter address.
+
+### 23. MonadScan verification requires Etherscan V2 API, not Sourcify
+
+MonadScan is Etherscan-based. Sourcify verification (`--verifier sourcify --verifier-url https://sourcify-api-monad.blockvision.org/`) only shows on **MonadVision**, not MonadScan.
+
+**Preferred method: `forge verify-contract` with `--verifier-url`**
+
+`forge verify-contract --chain 143` fails because Foundry doesn't know chain 143. Instead, use `--verifier-url` to point directly at the Etherscan V2 endpoint:
+
+```bash
+forge verify-contract \
+  --num-of-optimizations 20000 \
+  --watch \
+  --constructor-args 0x<hex-encoded-constructor-args> \
+  --verifier etherscan \
+  --verifier-url "https://api.etherscan.io/v2/api?chainid=143" \
+  --etherscan-api-key $MONADSCAN_API_KEY \
+  --compiler-version 0.8.24+commit.e11b9ed9 \
+  --evm-version cancun \
+  <contract-address> \
+  <path:ContractName>
+```
+
+The `MONADSCAN_API_KEY` from `.env` is a standard etherscan.io key — the V2 endpoint routes to MonadScan via the `chainid=143` query parameter.
+
+**Important:** `forge verify-contract` resolves sources relative to the project's `foundry.toml` `src` directory. If the contract source lives in a dependency (e.g. `lib/euler-vault-kit/`), run the command from inside that dependency's directory and use the relative path (e.g. `src/GenericFactory/BeaconProxy.sol:BeaconProxy`). Running from the parent project with `lib/...` paths fails with "cannot resolve file".
+
+**Fallback: curl with Standard JSON Input**
+
+If `forge verify-contract` doesn't work (e.g. complex remappings), generate the JSON input and submit directly:
+
+```bash
+forge verify-contract <address> <path:Contract> --show-standard-json-input > /tmp/input.json
+
+curl -X POST "https://api.etherscan.io/v2/api?chainid=143" \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  --data-urlencode "module=contract" \
+  --data-urlencode "action=verifysourcecode" \
+  --data-urlencode "contractaddress=<address>" \
+  --data-urlencode "sourceCode@/tmp/input.json" \
+  --data-urlencode "codeformat=solidity-standard-json-input" \
+  --data-urlencode "contractname=<path:Contract>" \
+  --data-urlencode "compilerversion=v0.8.24+commit.e11b9ed9" \
+  --data-urlencode "optimizationUsed=1" \
+  --data-urlencode "runs=20000" \
+  --data-urlencode "constructorArguements=<hex-no-0x-prefix>" \
+  --data-urlencode "evmversion=cancun" \
+  --data-urlencode "apikey=$MONADSCAN_API_KEY"
+```
+
+**EVault BeaconProxy verification:** The vault proxies ARE source-verifiable — they use `BeaconProxy.sol` from `euler-vault-kit/src/GenericFactory/`. Constructor args encode `abi.encodePacked(bytes4(0), asset, oracle, unitOfAccount)` wrapped in ABI `bytes` encoding (32-byte offset + 32-byte length + 64 bytes padded data). Compute with:
+
+```bash
+cast abi-encode "constructor(bytes)" \
+  $(cast abi-encode --packed "(bytes4,bytes)" 00000000 \
+    $(cast abi-encode --packed "(address,address,address)" <ASSET> <ORACLE> <UNIT_OF_ACCOUNT>))
+```
+
+Read the three values from any vault: `cast call <VAULT> "asset()(address)" --rpc-url https://rpc.monad.xyz` (and `oracle()`, `unitOfAccount()`).

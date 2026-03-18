@@ -22,6 +22,9 @@ dist/
 **/cache/
 **/broadcast/
 
+# --- Foundry Dependencies (restore with `forge install`) ---
+**/lib/
+
 # --- IDE & Editor ---
 .vscode/
 .idea/
@@ -39,9 +42,16 @@ npm-debug.log*
 # --- Frontend Repos (each has its own .git) ---
 euler-lite/
 euler-lite-cork/
+euler-lite-frax/
+euler-lite-origin/
 
 # --- Reference Repos (standalone clones, not submodules) ---
 reference/
 
 # --- Labels Repos (standalone, managed independently) ---
 balancer-labels/
+frax-labels/
+origin-labels/
+
+# --- Euler Labels Fork (standalone repo) ---
+euler-labels/

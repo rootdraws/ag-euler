@@ -31,6 +31,7 @@ Do this carefully — nothing should break.
 - [ ] Plan the migration (verify no hardcoded paths in scripts, CI, or Vercel)
 - [ ] Move `cork-contracts/` → `contracts/cork/`
 - [ ] Move `balancer-contracts/` → `contracts/balancer/`
+- [ ] Move `origin-contracts/` → `contracts/origin/`
 - [ ] Create `contracts/shared/` with deduplicated `forge-std`, `euler-price-oracle`, `evk-periphery`
 - [ ] Update each partner's `foundry.toml` and `remappings.txt` to point at `../shared/`
 - [ ] Delete duplicated copies from each partner dir
@@ -93,9 +94,52 @@ Require `CorkSeriesRegistry` which Cork has not deployed.
 
 ---
 
+## Origin Protocol — Ethereum Mainnet
+
+**Status: LIVE.** Contracts deployed, frontend live at [origin.alphagrowth.fun](https://origin.alphagrowth.fun). Lending, borrowing, and multiply (direct ARM deposit, zero-slippage looping) all functional.
+
+**Frontend repo:** `rootdraws/ag-euler-lite-origin` (fork of euler-lite, customized for ARM adapter multiply)
+**Labels repo:** `rootdraws/ag-euler-origin-labels`
+**Vercel project:** `ag-euler-lite-origin`
+
+### Deployed Addresses
+
+| Contract | Address |
+|---|---|
+| KinkIRM | `0xa3AC336b108E698d5e96D96F9E1b56dAa9B28bcC` |
+| EulerRouter | `0x1C33Db5FC563ac9732C5352c37B73d95b7015E6f` |
+| WETH Borrow Vault | `0x2ff5F1Ca35f5100226ac58E1BFE5aac56919443B` |
+| ARM-WETH-stETH Collateral Vault | `0xbD858DCee56Df1F0CBa44e6F5a469FbfeC0246cd` |
+| Curator Fee Receiver | `0x4f894Bfc9481110278C356adE1473eBe2127Fd3C` |
+
+### What's Working
+
+- [x] Contracts deployed (IRM, router, borrow vault, collateral vault, oracle wired, cluster configured)
+- [x] Fee receiver set (10% interest fee → `0x4f894Bfc...`)
+- [x] Hook config cleared (operations enabled on both vaults)
+- [x] Labels repo created and configured
+- [x] Frontend deployed on Vercel (`ag-euler-lite-origin`) with Alchemy RPC
+- [x] Lending (deposit WETH into borrow vault)
+- [x] Borrowing (borrow WETH against ARM collateral)
+- [x] Multiply — direct ARM `deposit()` via GenericHandler (zero-slippage leveraged looping)
+- [x] Intrinsic APY sourced from DeFi Llama
+
+### Remaining TODOs
+
+- [ ] **Add `origin.svg` logo** to `origin-labels/logo/` — currently missing
+- [ ] **EulerSwap pool deployment** — Origin deploys via Maglev. Needed for ARM → WETH instant liquidity, unwind, and liquidations.
+- [ ] **ARM CapManager check** — if per-LP caps are active, the Swapper contract may need whitelisting for ARM deposits
+- [ ] **`setCaps()`** — tighten supply/borrow caps once ready for production. Currently unlimited (0,0).
+- [ ] **EulerSwap equilibrium price updates** — determine if periodic updates are needed as ARM exchange rate drifts up
+- [ ] **Initial liquidity** — determine WETH and ARM-WETH-stETH amounts for EulerSwap pool
+- [ ] **Liquidation testing** — confirm liquidation works end-to-end for ARM-collateralized positions
+- [ ] **Governor transfer** — transfer from deployer EOA to multisig after stable
+
+---
+
 ## Balancer — Monad (Chain 143)
 
-**Status: LIVE.** Contracts deployed, frontend live at [balancer.alphagrowth.fun](https://balancer.alphagrowth.fun). Lending, borrowing, multiply (Pools 1, 2, 4), Zap BPT, and repay all functional.
+**Status: LIVE.** Contracts deployed and verified on MonadScan, frontend live at [balancer.alphagrowth.fun](https://balancer.alphagrowth.fun). Lending, borrowing, multiply (Pools 1, 2, 4), Zap BPT, and repay all functional. Balancer preparing pool incentives.
 
 **Frontend repo:** `rootdraws/ag-euler-lite-balancer` (fork of euler-lite, customized for Balancer BPT markets)
 **Labels repo:** `rootdraws/ag-euler-balancer-labels`
@@ -128,6 +172,7 @@ Require `CorkSeriesRegistry` which Cork has not deployed.
 - [x] Zap BPT — all 4 pools (Enso for 1-3, adapter for Pool 4)
 - [x] Repay — all pools via Enso
 - [x] Oracle pricing verified on-chain
+- [x] All contracts verified on MonadScan (source-verified + proxy-linked via Etherscan V2 API)
 
 ### Architecture Decisions (Resolved)
 
@@ -147,4 +192,64 @@ Require `CorkSeriesRegistry` which Cork has not deployed.
 - [ ] **Pool 3 multiply** — untested. Should work via Enso (same path as Pool 2) but needs verification.
 - [ ] **Liquidation testing** — confirm liquidation works end-to-end for BPT-collateralized positions.
 - [ ] **Governor transfer** — transfer from deployer EOA to multisig after stable.
+- [ ] **Balancer incentives** — Balancer is preparing to incentivize the pools. Monitor TVL and adjust caps/IRM parameters as liquidity grows.
+
+---
+
+## Frax — Base (Chain 8453)
+
+**Status: DEPLOYED.** All contracts live on Base. Labels updated. Frontend cloned and configured.
+
+**Contract dir:** `frax-contracts/` (Foundry project with `ichi-oracle-kit/` oracle adapter)
+**Frontend repo:** `euler-lite-frax/` (fork of euler-lite)
+**Labels repo:** `rootdraws/ag-euler-frax-labels` (to be pushed to GitHub)
+**Context doc:** `frax-contracts/frax-claude.md`
+**Governor/deployer:** `0x5304ebB378186b081B99dbb8B6D17d9005eA0448`
+
+### Cluster
+
+5 ICHI vault collateral markets (single-sided frxUSD on Hydrex) + 1 shared frxUSD borrow vault. Custom `ICHIVaultOracle` uses Algebra VolatilityOracle TWAP for flash-loan-resistant pricing.
+
+### Deployed Contracts
+
+| Contract | Address |
+|---|---|
+| KinkIRM | `0xDa930180CC4203d2Fad620c56828b0a1807a9D27` |
+| EulerRouter | `0x6565475B4Ed91aD20Ea9C3799fB04648D1a170CA` |
+| ICHIVaultOracleFactory | `0x279901f966160dCf3D53236EbEAc08DC372e0821` |
+| OraclePoke | `0x455587b12e079bd1dAc1a16C7470df8F7Fbe69BC` |
+| frxUSD Borrow Vault | `0x42BA0a943EDcc846333642d62F500894b199A798` |
+| Collateral: BRZ | `0xB5587B4BE26608c7a6E6081B50C43AEBbA09E187` |
+| Collateral: tGBP | `0xd8277Cbb6576085C192b9F920c5447aa5624a84B` |
+| Collateral: USDC | `0x417E102f1d2BF2E52d0599Da14Fb79dDb4B0b89F` |
+| Collateral: IDRX | `0x3371667cB5f6676fa14d95c3839da77705E46A39` |
+| Collateral: KRWQ | `0x764Fb38Fe7519d2544BACBc8A495Cf64c0505b44` |
+
+### Deployment (COMPLETE)
+
+- [x] **01_DeployIRM** — KinkIRM `0xDa930180CC4203d2Fad620c56828b0a1807a9D27`
+- [x] **02_DeployRouter** — EulerRouter `0x6565475B4Ed91aD20Ea9C3799fB04648D1a170CA`
+- [x] **03_DeployOracles** — Factory + 5 oracles + OraclePoke (all verified on Basescan)
+- [x] **04_DeployBorrowVault** — frxUSD borrow vault
+- [x] **05_DeployCollateralVaults** — 5 ICHI collateral eVaults
+- [x] **06_WireRouter** — 5x govSetConfig + 5x govSetResolvedVault
+- [x] **07_ConfigureCluster** — IRM, 95/97 LTVs, 3% liq discount, unlimited caps
+
+**Note:** KRWQ poke required explicit gas limit (500k) due to gas estimation being too tight for the `beforeSwap` hook + community vault transfer. The `keeper.ts` cron must set an explicit gas limit when calling `pokeStale()`.
+
+### Remaining TODOs
+
+- [x] **Update `frax-claude.md`** with deployed addresses
+- [x] **Update `frax-labels/` JSON files** with real eVault addresses
+- [ ] **Push labels to GitHub** — `rootdraws/ag-euler-frax-labels`
+- [ ] **Seed OraclePoke** with dust tokens (~$1 each of frxUSD + FX tokens per pool)
+- [ ] **Start keeper.ts cron** (every 10 min) — keeps oracle timepoints fresh
+- [x] **Debug KRWQ poke** — root cause: gas estimation too tight. Fix: explicit gas limit (500k) on `pokeStale()` calls
+- [ ] **Set `NUXT_PUBLIC_APP_KIT_PROJECT_ID`** in `euler-lite-frax/.env` (Reown project ID)
+- [ ] **Create Vercel project** `ag-euler-lite-frax`, set env vars, deploy
+- [ ] **Verify frontend** — vaults appear, deposit/borrow UI works
+- [ ] **`setFeeReceiver()`** — set once AG has a Base fee address
+- [ ] **`setCaps()`** — tighten supply/borrow caps before production
+- [ ] **Liquidation testing** — confirm end-to-end with treasury liquidation flow
+- [ ] **Governor transfer** — transfer from deployer EOA to multisig after stable
 
