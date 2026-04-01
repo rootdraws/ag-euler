@@ -6,43 +6,40 @@ Consolidated task tracker across all partner deployments and repo-wide work.
 
 ## Repo-Wide
 
-### Repo Reorganization + Shared Lib Deduplication
+### Frontend & Labels Consolidation (DONE)
 
-Current layout (`cork-contracts/`, `balancer-contracts/`) doesn't scale — adding a third partner means `threshold-contracts/`, `infinifi-contracts/`, etc. Reorganize into a cleaner structure:
+All partner frontends consolidated into `frontends/alphagrowth/` — a single euler-lite fork with feature flags for Cork (dual-collateral borrow), Balancer (BPT adapter/Enso multiply, loop-zap), and Origin (ARM multiply). All labels consolidated into `frontends/labels/alphagrowth/` with chain directories for 1 (Cork + Origin), 143 (Balancer), and 8453 (Frax).
 
-```
-AG-Euler/
-├── contracts/
-│   ├── cork/
-│   ├── balancer/
-│   ├── <next-partner>/
-│   └── shared/           ← deduplicated libs (forge-std, euler-price-oracle, evk-periphery)
-├── labels/
-│   ├── cork/             ← currently rootdraws/ag-euler-cork-labels (separate repo)
-│   ├── balancer/         ← currently rootdraws/ag-euler-balancer-labels (separate repo)
-│   └── <next-partner>/
-├── euler-lite/
-├── reference/
-└── ...
-```
+- [x] Merge Cork custom code (forkChainMap, cork-borrow page, dual-collateral composable, ERC4626 fallback)
+- [x] Merge Origin custom code (ARM ABI, useArmRoute, multiply form ARM branch)
+- [x] Merge Balancer custom code (already the base — BPT adapter, Enso, loop-zap)
+- [x] Consolidate labels (chains 1, 143, 8453 in one repo)
+- [x] Delete per-partner frontends (`euler-lite-cork`, `euler-lite-frax`, `euler-lite-origin`)
+- [x] Delete per-partner labels (`cork-labels`, `frax-labels`, `origin-labels`)
+- [x] Move `euler-labels` fork to `euler-submission/euler-labels/`
 
-Do this carefully — nothing should break.
+### Remaining Repo Work
 
-- [ ] Plan the migration (verify no hardcoded paths in scripts, CI, or Vercel)
-- [ ] Move `cork-contracts/` → `contracts/cork/`
-- [ ] Move `balancer-contracts/` → `contracts/balancer/`
-- [ ] Move `origin-contracts/` → `contracts/origin/`
-- [ ] Create `contracts/shared/` with deduplicated `forge-std`, `euler-price-oracle`, `evk-periphery`
-- [ ] Update each partner's `foundry.toml` and `remappings.txt` to point at `../shared/`
-- [ ] Delete duplicated copies from each partner dir
-- [ ] Verify both `forge build` still compile clean
-- [ ] Decide whether labels stay as separate GitHub repos or move into `labels/` (labels must be fetchable via raw GitHub URL — local paths won't work without a frontend change)
+- [ ] **Push consolidated labels to GitHub** — the labels repo remote is currently `alphagrowth/ag-euler-balancer-labels`. Either rename it or create a new repo (e.g. `alphagrowth/ag-euler-labels`) and update the `.env` accordingly.
+- [ ] **Contracts directory restructure** — consider renaming `cork-contracts/` → `cork/`, etc. under `contracts/` and deduplicating shared libs (forge-std, euler-price-oracle, evk-periphery) into `contracts/shared/`. Not urgent — nothing is broken.
+
+### Vercel / DNS (Michael)
+
+- [ ] **Deploy consolidated frontend** — single Vercel project using `frontends/alphagrowth/`, env vars from `.env`
+- [ ] **Configure domain routing** at `euler.alphagrowth.io`
+
+### Repo Updates (Done)
+
+- [x] Update `README.md` for consolidated structure
+- [x] Update `TODO.md` for consolidated structure
+- [x] Update `CLAUDE.md` for consolidated structure
+- [x] Update `new_market.md` for consolidated structure
 
 ---
 
 ## Cork Protocol — Ethereum Mainnet
 
-Contracts deployed and verified. Labels live at `rootdraws/ag-euler-cork-labels`. Frontend at [cork.alphagrowth.fun](https://cork.alphagrowth.fun).
+Contracts deployed and verified. Labels in `frontends/labels/alphagrowth/1/`. Frontend custom code (dual-collateral borrow) in `frontends/alphagrowth/`.
 
 ### Liquidator — CRITICAL: Redeploy Required
 
@@ -68,13 +65,13 @@ Bot scripts at `cork-contracts/script/bot/`. Tested manually on Tenderly fork (s
 
 - [x] Borrow tested on Tenderly — hook enforces dual-collateral pairing (vbUSDC + cST)
 - [x] Liquidation tested on Tenderly — full cycle works with fixed contract
-- [x] Frontend deployed at cork.alphagrowth.fun (Tenderly fork demo)
+- [x] Frontend custom code merged into consolidated alphagrowth frontend
 - [ ] **Acquire mainnet test assets:**
   - vbUSDC: approve USDC → deposit into Cork's vbUSDC vault (1:1)
   - sUSDe: buy via Ethena or DEX
   - cST: `CorkPoolManager.mint()` — requires Cork whitelist on deployer EOA
-- [ ] **Switch cork.alphagrowth.fun to mainnet** — update `.env` from Tenderly RPC to mainnet RPC, remove fork chain mapping if not needed
-- [ ] **Verify on cork.alphagrowth.fun** — cluster appears, vaults load, deposit/borrow UI works on real mainnet
+- [ ] **Switch Cork frontend to mainnet** — update `.env` from Tenderly RPC to mainnet RPC
+- [ ] **Verify on euler.alphagrowth.io** — cluster appears, vaults load, deposit/borrow UI works on real mainnet
 - [ ] **Test borrow on mainnet** — deposit vbUSDC + cST, borrow sUSDe
 - [ ] **Test liquidation on mainnet** — create unhealthy position, confirm end-to-end
 
@@ -96,11 +93,7 @@ Require `CorkSeriesRegistry` which Cork has not deployed.
 
 ## Origin Protocol — Ethereum Mainnet
 
-**Status: LIVE.** Contracts deployed, frontend live at [origin.alphagrowth.fun](https://origin.alphagrowth.fun). Lending, borrowing, and multiply (direct ARM deposit, zero-slippage looping) all functional.
-
-**Frontend repo:** `rootdraws/ag-euler-lite-origin` (fork of euler-lite, customized for ARM adapter multiply)
-**Labels repo:** `rootdraws/ag-euler-origin-labels`
-**Vercel project:** `ag-euler-lite-origin`
+**Status: LIVE.** Contracts deployed, frontend custom code (ARM multiply) merged into consolidated alphagrowth frontend. Labels in `frontends/labels/alphagrowth/1/`. Lending, borrowing, and multiply (direct ARM deposit, zero-slippage looping) all functional.
 
 ### Deployed Addresses
 
@@ -117,8 +110,8 @@ Require `CorkSeriesRegistry` which Cork has not deployed.
 - [x] Contracts deployed (IRM, router, borrow vault, collateral vault, oracle wired, cluster configured)
 - [x] Fee receiver set (10% interest fee → `0x4f894Bfc...`)
 - [x] Hook config cleared (operations enabled on both vaults)
-- [x] Labels repo created and configured
-- [x] Frontend deployed on Vercel (`ag-euler-lite-origin`) with Alchemy RPC
+- [x] Labels consolidated into alphagrowth labels
+- [x] Frontend ARM multiply merged into consolidated frontend
 - [x] Lending (deposit WETH into borrow vault)
 - [x] Borrowing (borrow WETH against ARM collateral)
 - [x] Multiply — direct ARM `deposit()` via GenericHandler (zero-slippage leveraged looping)
@@ -126,7 +119,7 @@ Require `CorkSeriesRegistry` which Cork has not deployed.
 
 ### Remaining TODOs
 
-- [ ] **Add `origin.svg` logo** to `origin-labels/logo/` — currently missing
+- [ ] **Add `origin.svg` logo** to labels — currently using `origin.png` from euler-labels
 - [ ] **EulerSwap pool deployment** — Origin deploys via Maglev. Needed for ARM → WETH instant liquidity, unwind, and liquidations.
 - [ ] **ARM CapManager check** — if per-LP caps are active, the Swapper contract may need whitelisting for ARM deposits
 - [ ] **`setCaps()`** — tighten supply/borrow caps once ready for production. Currently unlimited (0,0).
@@ -139,11 +132,7 @@ Require `CorkSeriesRegistry` which Cork has not deployed.
 
 ## Balancer — Monad (Chain 143)
 
-**Status: LIVE.** Contracts deployed and verified on MonadScan, frontend live at [balancer.alphagrowth.fun](https://balancer.alphagrowth.fun). Lending, borrowing, multiply (Pools 1, 2, 4), Zap BPT, and repay all functional. Balancer preparing pool incentives.
-
-**Frontend repo:** `rootdraws/ag-euler-lite-balancer` (fork of euler-lite, customized for Balancer BPT markets)
-**Labels repo:** `rootdraws/ag-euler-balancer-labels`
-**Vercel project:** `ag-euler-balancer`
+**Status: LIVE.** Contracts deployed and verified on MonadScan. Labels in `frontends/labels/alphagrowth/143/`. Frontend custom code (BPT adapter/Enso multiply, loop-zap) in `frontends/alphagrowth/`. Lending, borrowing, multiply (Pools 1, 2, 4), Zap BPT, and repay all functional.
 
 ### Deployed Addresses
 
@@ -163,8 +152,8 @@ Require `CorkSeriesRegistry` which Cork has not deployed.
 ### What's Working
 
 - [x] Contracts deployed (9 scripts: IRM, router, borrow vaults, collateral vaults, oracles, cluster config, operations, 2 adapters)
-- [x] Labels repo created and configured
-- [x] Frontend deployed on Vercel (`ag-euler-balancer`)
+- [x] Labels consolidated into alphagrowth labels
+- [x] Frontend custom code (BPT adapter, Enso, loop-zap) in consolidated frontend
 - [x] Lending (deposit into borrow vaults)
 - [x] Borrowing (borrow against BPT collateral)
 - [x] Multiply — Pool 1 (adapter) and Pool 4 (adapter) — working
@@ -173,17 +162,6 @@ Require `CorkSeriesRegistry` which Cork has not deployed.
 - [x] Repay — all pools via Enso
 - [x] Oracle pricing verified on-chain
 - [x] All contracts verified on MonadScan (source-verified + proxy-linked via Etherscan V2 API)
-
-### Architecture Decisions (Resolved)
-
-| Decision | Outcome |
-|---|---|
-| Enso Bundle vs EVC Batch | **EVC Batch + Enso Route** (Architecture B). Enso does not support Euler V2 on Monad. |
-| Forward routing (borrow→BPT) | Adapter for Pools 1,4 (ERC4626 wrapped tokens). Enso Route for Pools 2,3. |
-| Reverse routing (BPT→borrow) | Enso for all pools. Adapter `zapOut` blocked by pool hooks. |
-| Swapper multicall strategy | `swap` + `sweep` (not `deposit`). `deposit()` consumes tokens, breaking `verifyAmountMinAndSkim`. |
-| BPT preview method | `ERC4626.previewDeposit` + decimal scaling. `queryAddLiquidityUnbalanced` reverts with `NotStaticCall()` on Monad. |
-| Debt safety margin | `max(3× slippage, 1%)` reduction on borrow amount to account for swap price impact. |
 
 ### Remaining TODOs
 
@@ -198,12 +176,10 @@ Require `CorkSeriesRegistry` which Cork has not deployed.
 
 ## Frax — Base (Chain 8453)
 
-**Status: DEPLOYED.** All contracts live on Base. Labels updated. Frontend cloned and configured.
+**Status: DEPLOYED.** All contracts live on Base. Labels in `frontends/labels/alphagrowth/8453/`. No custom frontend code needed — standard euler-lite flows.
 
-**Contract dir:** `frax-contracts/` (Foundry project with `ichi-oracle-kit/` oracle adapter)
-**Frontend repo:** `euler-lite-frax/` (fork of euler-lite)
-**Labels repo:** `rootdraws/ag-euler-frax-labels` (to be pushed to GitHub)
-**Context doc:** `frax-contracts/frax-claude.md`
+**Contract dir:** `contracts/frax-contracts/` (Foundry project with `ichi-oracle-kit/` oracle adapter)
+**Context doc:** `contracts/frax-contracts/frax-claude.md`
 **Governor/deployer:** `0x5304ebB378186b081B99dbb8B6D17d9005eA0448`
 
 ### Cluster
@@ -219,11 +195,7 @@ Require `CorkSeriesRegistry` which Cork has not deployed.
 | ICHIVaultOracleFactory | `0x279901f966160dCf3D53236EbEAc08DC372e0821` |
 | OraclePoke | `0x455587b12e079bd1dAc1a16C7470df8F7Fbe69BC` |
 | frxUSD Borrow Vault | `0x42BA0a943EDcc846333642d62F500894b199A798` |
-| Collateral: BRZ | `0xB5587B4BE26608c7a6E6081B50C43AEBbA09E187` |
-| Collateral: tGBP | `0xd8277Cbb6576085C192b9F920c5447aa5624a84B` |
-| Collateral: USDC | `0x417E102f1d2BF2E52d0599Da14Fb79dDb4B0b89F` |
-| Collateral: IDRX | `0x3371667cB5f6676fa14d95c3839da77705E46A39` |
-| Collateral: KRWQ | `0x764Fb38Fe7519d2544BACBc8A495Cf64c0505b44` |
+| Collateral: BRZ | `0x92f8b6bfC276E9A38545bE6517d3295593060D00` |
 
 ### Deployment (COMPLETE)
 
@@ -239,17 +211,12 @@ Require `CorkSeriesRegistry` which Cork has not deployed.
 
 ### Remaining TODOs
 
-- [x] **Update `frax-claude.md`** with deployed addresses
-- [x] **Update `frax-labels/` JSON files** with real eVault addresses
-- [ ] **Push labels to GitHub** — `rootdraws/ag-euler-frax-labels`
+- [x] Labels consolidated into alphagrowth labels
+- [ ] **Push labels to GitHub** — included in consolidated labels repo push
 - [ ] **Seed OraclePoke** with dust tokens (~$1 each of frxUSD + FX tokens per pool)
 - [ ] **Start keeper.ts cron** (every 10 min) — keeps oracle timepoints fresh
-- [x] **Debug KRWQ poke** — root cause: gas estimation too tight. Fix: explicit gas limit (500k) on `pokeStale()` calls
-- [ ] **Set `NUXT_PUBLIC_APP_KIT_PROJECT_ID`** in `euler-lite-frax/.env` (Reown project ID)
-- [ ] **Create Vercel project** `ag-euler-lite-frax`, set env vars, deploy
-- [ ] **Verify frontend** — vaults appear, deposit/borrow UI works
+- [ ] **Verify frontend** — vaults appear in consolidated frontend, deposit/borrow UI works
 - [ ] **`setFeeReceiver()`** — set once AG has a Base fee address
 - [ ] **`setCaps()`** — tighten supply/borrow caps before production
 - [ ] **Liquidation testing** — confirm end-to-end with treasury liquidation flow
 - [ ] **Governor transfer** — transfer from deployer EOA to multisig after stable
-

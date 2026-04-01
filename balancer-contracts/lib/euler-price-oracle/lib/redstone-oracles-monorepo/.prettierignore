@@ -1,6 +1,0 @@
-node_modules
-artifacts
-gasReporterOutput.json
-dist
-target
-relay-adapter-process-chunk-args.json

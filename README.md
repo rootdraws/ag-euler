@@ -1,6 +1,6 @@
 # AG-Euler
 
-Alpha Growth's Euler deployment monorepo. Each subdirectory is a partner deployment — custom contracts, deployment scripts, and docs. Shared frontend ([ag-euler-lite](https://github.com/rootdraws/ag-euler-lite)) configured per partner via env vars in Vercel, with per-partner forks when custom UX is needed.
+Alpha Growth's Euler V2 deployment monorepo. Contracts, deployment scripts, labels, and a consolidated frontend for each partner market.
 
 ```bash
 git clone --recurse-submodules https://github.com/rootdraws/ag-euler.git
@@ -10,11 +10,14 @@ git clone --recurse-submodules https://github.com/rootdraws/ag-euler.git
 
 ## Deployments
 
-| Partner | URL | Contracts | Frontend | Status |
-|---|---|---|---|---|
-| Cork Protocol | [cork.alphagrowth.fun](https://cork.alphagrowth.fun) | [cork-contracts/](cork-contracts/) | [ag-euler-lite-cork](https://github.com/rootdraws/ag-euler-lite-cork) | Live (Tenderly demo) |
-| Balancer | [balancer.alphagrowth.fun](https://balancer.alphagrowth.fun) | [balancer-contracts/](balancer-contracts/) | [ag-euler-lite-balancer](https://github.com/rootdraws/ag-euler-lite-balancer) | **Live** |
-| Origin Protocol | [origin.alphagrowth.fun](https://origin.alphagrowth.fun) | [origin-contracts/](origin-contracts/) | [ag-euler-lite-origin](https://github.com/rootdraws/ag-euler-lite-origin) | **Live** |
+| Partner | Chain | Contracts | Status |
+|---|---|---|---|
+| Cork Protocol | Ethereum (1) | [contracts/cork-contracts/](contracts/cork-contracts/) | Tenderly demo — liquidator redeploy pending |
+| Balancer | Monad (143) | [contracts/balancer-contracts/](contracts/balancer-contracts/) | **Live** |
+| Origin Protocol | Ethereum (1) | [contracts/origin-contracts/](contracts/origin-contracts/) | **Live** |
+| Frax | Base (8453) | [contracts/frax-contracts/](contracts/frax-contracts/) | Deployed — caps pending |
+
+Frontend: `euler.alphagrowth.io` — managed by Michael (AG webmaster). Source at `frontends/alphagrowth/`.
 
 ---
 
@@ -22,95 +25,62 @@ git clone --recurse-submodules https://github.com/rootdraws/ag-euler.git
 
 ```
 AG-Euler/
-├── cork-contracts/          ← Cork Protocol deployment (Ethereum mainnet)
-│   ├── src/                 ← oracle, hook, liquidator, vault
-│   ├── script/              ← 7 deployment scripts + bot/
-│   │   └── bot/             ← liquidation bot (setup.sh, run.sh, .env.example)
-│   ├── cork-README.md
-│   ├── cork-implementation.md
-│   └── cork-claude.md
-├── euler-lite-cork/         ← Cork frontend (separate repo → rootdraws/ag-euler-lite-cork)
-├── euler-lite/              ← shared frontend (independent repo → rootdraws/ag-euler-lite)
-├── balancer-contracts/      ← Balancer BPT vault deployment (Monad, chain 143)
-│   ├── src/                 ← BalancerBptAdapter (single-sided LP + ERC4626 wrapping)
-│   ├── script/              ← 9 deployment scripts + test scripts
-│   └── balancer-claude.md
-├── euler-lite-balancer/     ← Balancer frontend (separate repo → rootdraws/ag-euler-lite-balancer)
-├── origin-contracts/        ← Origin ARM x Euler deployment (Ethereum mainnet)
-│   ├── script/              ← 7 deployment scripts (IRM, router, vaults, oracle, cluster, fee receiver)
-│   └── origin-arm-euler-spec.md
-├── origin-labels/           ← Origin labels (local copy → rootdraws/ag-euler-origin-labels)
-├── euler-lite-origin/       ← Origin frontend (separate repo → rootdraws/ag-euler-lite-origin)
-├── reference/               ← upstream read-only repos (submodules)
+├── contracts/
+│   ├── balancer-contracts/     ← Balancer BPT vaults (Monad)
+│   │   ├── src/                ← BalancerBptAdapter
+│   │   ├── script/             ← 12 deployment + admin scripts
+│   │   └── balancer-claude.md
+│   ├── cork-contracts/         ← Cork Protocol (Ethereum mainnet)
+│   │   ├── src/                ← oracle, hook, liquidator, vault
+│   │   ├── script/             ← 7 deployment scripts + bot/
+│   │   └── cork-claude.md
+│   ├── frax-contracts/         ← Frax ICHI vaults (Base)
+│   │   ├── src/ + ichi-oracle-kit/  ← ICHIVaultOracle + keeper
+│   │   ├── script/             ← 8 deployment scripts
+│   │   └── frax-claude.md
+│   └── origin-contracts/       ← Origin ARM × WETH (Ethereum mainnet)
+│       ├── script/             ← 7 deployment scripts
+│       └── origin-arm-euler-spec.md
+├── frontends/
+│   ├── alphagrowth/            ← Consolidated frontend (all partners, feature-flagged)
+│   │   ├── pages/cork-borrow.vue         ← Cork dual-collateral borrow
+│   │   ├── composables/useArmRoute.ts    ← Origin ARM multiply routing
+│   │   ├── composables/useEnsoRoute.ts   ← Balancer BPT multiply routing
+│   │   └── .env                          ← All chains + feature flags
+│   └── labels/
+│       ├── alphagrowth/        ← Consolidated labels (chains 1, 143, 8453)
+│       │   ├── 1/              ← Cork + Origin (Ethereum)
+│       │   ├── 143/            ← Balancer (Monad)
+│       │   └── 8453/           ← Frax (Base)
+│       └── euler-submission/
+│           └── euler-labels/   ← Fork of euler-xyz/euler-labels (official listing PRs)
+├── reference/                  ← Upstream read-only repos (submodules + clones)
 │   ├── ethereum-vault-connector/
-│   ├── euler-interfaces/
-│   ├── euler-labels/
+│   ├── euler-interfaces/       ← Core addresses, ABIs, oracle adapters per chain
+│   ├── euler-labels/           ← Upstream euler-labels (read-only reference)
+│   ├── euler-price-oracle/
 │   ├── euler-vault-kit/
 │   ├── euler-vault-scripts/
-│   └── phoenix/
-├── TODO.md                  ← consolidated task tracker (all partners)
-├── CLAUDE.md                ← AG-wide frontend context
+│   ├── evk-periphery/
+│   └── ...
+├── CLAUDE.md                   ← AI context: contracts, labels, integration
+├── TODO.md                     ← Task tracker (all partners)
+├── new_market.md               ← New market deployment SOP
 └── README.md
 ```
 
 ---
 
-## The Core Insight
+## How It Works
 
-Everything lives in one place. Most partner deployments are just a different set of env vars on the shared frontend.
+**This repo is the contracts + labels + frontend source of truth.** Each partner gets:
+1. A Foundry project under `contracts/` with deployment scripts and custom Solidity
+2. Labels entries in `frontends/labels/alphagrowth/<chainId>/` controlling which vaults appear in the UI
+3. A context doc (`<partner>-claude.md`) capturing architecture decisions and deployed addresses
 
-**Repos:**
+**Frontend is consolidated.** All partners share a single euler-lite fork at `frontends/alphagrowth/`. Custom flows (Cork dual-collateral borrow, Balancer BPT adapter multiply, Origin ARM multiply) are feature-flagged via env vars. Michael handles production deployment to `euler.alphagrowth.io`.
 
-```
-AG-Euler/  (this repo)                ← all development happens here
-rootdraws/ag-euler-lite               ← shared frontend, Vercel watches it
-rootdraws/ag-euler-lite-cork          ← Cork-specific frontend (custom dual-collateral borrow flow)
-rootdraws/ag-euler-lite-balancer      ← Balancer-specific frontend (BPT zap, Enso/adapter multiply)
-rootdraws/ag-euler-lite-origin        ← Origin-specific frontend (ARM deposit adapter multiply)
-rootdraws/ag-euler-<partner>-labels   ← one per partner, fetched at runtime
-```
-
-**N Vercel projects:**
-
-```
-rootdraws/ag-euler-lite
-  └── Vercel Project: infinifi.alphagrowth.fun → InfiniFi env vars (future)
-
-rootdraws/ag-euler-lite-cork
-  └── Vercel Project: cork.alphagrowth.fun     → Cork env vars
-
-rootdraws/ag-euler-lite-balancer
-  └── Vercel Project: balancer.alphagrowth.fun → Balancer env vars
-
-rootdraws/ag-euler-lite-origin
-  └── Vercel Project: origin.alphagrowth.fun  → Origin env vars
-```
-
-**Default model:** Changing env vars in Vercel morphs the shared frontend completely — no per-partner repo needed.
-
-**When to fork:** Cork and Balancer both required separate frontend repos. Cork's dual-collateral borrow flow (vbUSDC + cST) couldn't be feature-flagged. Balancer's BPT zap page, Enso routing integration, and adapter-based multiply are too specialized for the shared codebase. If a partner needs custom swap routing, non-standard collateral flows, or dedicated pages, fork `ag-euler-lite` into `ag-euler-lite-<partner>`.
-
----
-
-## The Frontend Model
-
-`ag-euler-lite` is one Nuxt 3 SPA. Every partner site is a Vercel project pointed at `rootdraws/ag-euler-lite` with a different env var set:
-
-| Env Var | Controls |
-|---|---|
-| `NUXT_PUBLIC_CONFIG_LABELS_REPO` | Which vaults appear — the entire product |
-| `NUXT_PUBLIC_CONFIG_APP_TITLE` | Page title and header branding |
-| `NUXT_PUBLIC_CONFIG_APP_DESCRIPTION` | Meta description |
-| `NUXT_PUBLIC_CONFIG_DOCS_URL` | Docs link in nav |
-| `NUXT_PUBLIC_CONFIG_ENABLE_EARN_PAGE` | Show/hide Earn page |
-| `NUXT_PUBLIC_CONFIG_ENABLE_LEND_PAGE` | Show/hide Lend page |
-| `NUXT_PUBLIC_CONFIG_ENABLE_EXPLORE_PAGE` | Show/hide Explore page |
-| `RPC_URL_HTTP_<chainId>` | Which chains are active |
-| `NUXT_PUBLIC_SUBGRAPH_URI_<chainId>` | Subgraph per chain |
-
-For custom UI: first try feature-flagged Vue pages in `ag-euler-lite` toggled via `NUXT_PUBLIC_CONFIG_ENABLE_<FEATURE>`. If the customization is too deep (e.g. Cork's dual-collateral borrow, Balancer's Enso/adapter routing), fork into `ag-euler-lite-<partner>` and point a separate Vercel project at it.
-
-Reference repos (`euler-vault-kit`, `ethereum-vault-connector`, `euler-interfaces`, `euler-labels`, `phoenix`) are submodules — pinned upstream sources. Labels repos (`rootdraws/ag-euler-<partner>-labels`) are standalone, managed independently.
+**Labels drive vault visibility.** If a vault address isn't in the labels repo's `products.json`, it doesn't exist in the UI. Labels are fetched from GitHub raw URLs at runtime. See `CLAUDE.md` for the schema.
 
 ---
 
@@ -118,47 +88,38 @@ Reference repos (`euler-vault-kit`, `ethereum-vault-connector`, `euler-interface
 
 | Script | Reusable? | What changes per partner |
 |---|---|---|
-| `01_DeployRouter.s.sol` | Identical — copy as-is | Nothing |
-| `02_DeployOracles.s.sol` | Custom | Oracle formula, constructor args |
-| `03_DeployVaults.s.sol` | Mostly reusable | Asset addresses, vault names |
-| `04_WireRouter.s.sol` | Mostly reusable | Oracle + asset addresses |
-| `05_DeployHookAndWire.s.sol` | Custom | Hook invariant logic |
-| `06_ConfigureCluster.s.sol` | Mostly reusable | LTVs, IRM params, fee receiver |
-| `07_DeployLiquidator.s.sol` | Custom | Liquidation exit path |
+| `01_DeployIRM.s.sol` | Identical — copy as-is | Rate curve parameters |
+| `02_DeployRouter.s.sol` | Identical — copy as-is | Nothing |
+| `03_DeployBorrowVault.s.sol` | Mostly reusable | Asset addresses, vault names |
+| `04_DeployCollateralVault.s.sol` | Mostly reusable | Asset addresses |
+| `05_WireOracle.s.sol` | Custom | Oracle formula, adapter addresses |
+| `06_ConfigureCluster.s.sol` | Mostly reusable | LTVs, IRM params, caps |
+| `07_SetFeeReceiver.s.sol` | Identical — copy as-is | Fee receiver address |
+
+Full deployment SOP with templates, parameters, and chain addresses: see `new_market.md`.
 
 ---
 
 ## Per-Deployment Checklist
 
 **Contracts:**
-- [ ] Create `<partner>/contracts/src/` with custom oracle, hook, liquidator
-- [ ] Copy 7 scripts from a prior deployment, update constants + addresses
-- [ ] Create `<partner>/contracts/.env` — RPC, private key, Etherscan key, protocol addresses
+- [ ] Create `contracts/<partner>-contracts/` with Foundry project
+- [ ] Copy deployment scripts from Origin (simplest template) or prior partner
+- [ ] Create `.env` — RPC, private key, Etherscan key, protocol addresses
 - [ ] Run scripts 01–07, paste each deployed address into `.env` before next step
-- [ ] Send liquidator address to partner team for whitelist if required
-
-**Frontend:**
-- [ ] Create new Vercel project → source: `rootdraws/ag-euler-lite` → set partner env vars
-- [ ] Set custom domain `<partner>.alphagrowth.fun`
+- [ ] Add custom contracts to `src/` if needed (oracle, hook, liquidator, adapter)
 
 **Labels:**
-- [ ] Create `rootdraws/ag-euler-<partner>-labels` on GitHub
-- [ ] Add `1/products.json`, `1/vaults.json`, `1/entities.json`, `1/points.json`, `1/opportunities.json`
-- [ ] Add `logo/alphagrowth.svg`, `logo/euler.svg`, `logo/<partner>.svg`
-- [ ] Set `NUXT_PUBLIC_CONFIG_LABELS_REPO=rootdraws/ag-euler-<partner>-labels` in Vercel
+- [ ] Add chain directory to `frontends/labels/alphagrowth/<chainId>/` (or merge into existing chain)
+- [ ] Add `products.json`, `vaults.json`, `entities.json`, `points.json`, `opportunities.json`
+- [ ] Add partner logo to `frontends/labels/alphagrowth/logo/`
+- [ ] Push labels repo to GitHub so the frontend can fetch them
+
+**Frontend:**
+- [ ] If custom flow needed, add to `frontends/alphagrowth/` with feature flag
+- [ ] Add chain RPC + subgraph to `.env`
+- [ ] Coordinate with Michael for production deployment
 
 **Docs:**
-- [ ] Add partner section to `TODO.md` at repo root
-- [ ] Add `<partner>-contracts/<partner>-claude.md` with deployment learnings
-
----
-
-## Shared Lib Migration
-
-`cork-contracts/lib/` contains its own copies of `evk-periphery` (1.1G) and `euler-price-oracle` (203M). When adding the first new partner:
-
-1. Move to `shared/lib/` at repo root
-2. Update each partner's `foundry.toml` to reference `../../shared/lib/`
-3. Delete duplicated copies
-
-Do this once when adding `balancer/contracts/` — not before.
+- [ ] Add partner section to `TODO.md`
+- [ ] Create `<partner>-claude.md` if custom contracts or non-obvious architecture

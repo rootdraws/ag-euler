@@ -1,8 +1,0 @@
-{
-  "shouldUpdatePrices": false,
-  "message": "Update NOT needed",
-  "localManifestData": "",
-  "manifestUrls": [
-    "https://raw.githubusercontent.com/redstone-finance/redstone-oracles-monorepo/refs/heads/main/packages/gelato-relayer/test/manifest.json"
-  ]
-}

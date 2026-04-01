@@ -1,8 +1,0 @@
-{
-  "extends": ["//"],
-  "tasks": {
-    "compile": {
-      "dependsOn": ["@redstone-finance/chain-configs#build", "@redstone-finance/utils#build"]
-    }
-  }
-}

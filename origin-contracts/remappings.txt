@@ -1,6 +1,0 @@
-forge-std/=lib/forge-std/src/
-euler-price-oracle/=../reference/euler-price-oracle/src/
-ethereum-vault-connector/=../reference/ethereum-vault-connector/src/
-euler-vault-kit/=../reference/euler-vault-kit/src/
-evk-periphery/=../reference/evk-periphery/src/
-@openzeppelin/contracts/=../reference/euler-price-oracle/lib/openzeppelin-contracts/contracts/
