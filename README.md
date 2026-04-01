@@ -16,6 +16,7 @@ git clone --recurse-submodules https://github.com/rootdraws/ag-euler.git
 | Balancer | Monad (143) | [contracts/balancer-contracts/](contracts/balancer-contracts/) | **Live** |
 | Origin Protocol | Ethereum (1) | [contracts/origin-contracts/](contracts/origin-contracts/) | **Live** |
 | Frax | Base (8453) | [contracts/frax-contracts/](contracts/frax-contracts/) | Deployed — caps pending |
+| ZRO (LayerZero) | Base (8453) | [contracts/zro-contracts/](contracts/zro-contracts/) | Scripts ready — adds to existing USDC/ETH cluster |
 
 Frontend: `euler.alphagrowth.io` — managed by Michael (AG webmaster). Source at `frontends/alphagrowth/`.
 
@@ -38,9 +39,11 @@ AG-Euler/
 │   │   ├── src/ + ichi-oracle-kit/  ← ICHIVaultOracle + keeper
 │   │   ├── script/             ← 8 deployment scripts
 │   │   └── frax-claude.md
-│   └── origin-contracts/       ← Origin ARM × WETH (Ethereum mainnet)
-│       ├── script/             ← 7 deployment scripts
-│       └── origin-arm-euler-spec.md
+│   ├── origin-contracts/       ← Origin ARM × WETH (Ethereum mainnet)
+│   │   ├── script/             ← 7 deployment scripts
+│   │   └── origin-arm-euler-spec.md
+│   └── zro-contracts/          ← ZRO × USDC/ETH cluster (Base)
+│       └── script/             ← 7 scripts (adapter, IRM, router, vault, wire, config, fee)
 ├── frontends/
 │   ├── alphagrowth/            ← Consolidated frontend (all partners, feature-flagged)
 │   │   ├── pages/cork-borrow.vue         ← Cork dual-collateral borrow

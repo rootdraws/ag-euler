@@ -7,6 +7,7 @@ AI context file for the AG-Euler monorepo. For project overview see `README.md`.
 - Balancer: `contracts/balancer-contracts/balancer-claude.md`
 - Frax: `contracts/frax-contracts/frax-claude.md`
 - Origin: `contracts/origin-contracts/origin-arm-euler-spec.md`
+- ZRO: `contracts/zro-contracts/` (Chainlink adapter + scripts to add ZRO to an existing Base cluster)
 
 **Frontend:** Consolidated at `frontends/alphagrowth/` — a single euler-lite fork serving all partners. All custom flows (Balancer BPT Zap, Cork dual-collateral borrow, Origin ARM multiply) are feature-flagged via env vars. Michael (AG webmaster) manages production deployment at `euler.alphagrowth.io`.
 
@@ -59,7 +60,7 @@ All partner labels live in `frontends/labels/alphagrowth/` with one chain direct
 |---|---|
 | `1/` (Ethereum) | Cork (dual-collateral borrow) + Origin (ARM/WETH) |
 | `143/` (Monad) | Balancer (BPT leverage) |
-| `8453/` (Base) | Frax (FX markets) |
+| `8453/` (Base) | Frax (FX markets) + ZRO/USDC/ETH cluster |
 
 The frontend `.env` points to the GitHub repo hosting these labels via `NUXT_PUBLIC_CONFIG_LABELS_REPO`.
 
@@ -132,3 +133,4 @@ To list vaults on the **official** Euler dApp, submit a PR to [euler-xyz/euler-l
 2. **Empty labels repo = empty frontend.** `products.json` as `{}` = zero vaults shown.
 3. **MonadScan verification uses Etherscan V2 API, not Sourcify.** Sourcify only shows on MonadVision. For MonadScan: `curl -X POST "https://api.etherscan.io/v2/api?chainid=143"` with Standard JSON Input from `forge verify-contract --show-standard-json-input`. `forge verify-contract --chain 143 --verifier etherscan` fails — forge doesn't know chain 143. See `contracts/balancer-contracts/balancer-claude.md` lesson #23.
 4. **Custom frontend flows are in `frontends/alphagrowth/`.** Cork dual-collateral borrow, Balancer BPT adapter/Enso multiply, and Origin ARM multiply are all implemented and feature-flagged. For new custom flows, add to this codebase. Michael handles production deployment.
+5. **Adding collateral to an existing cluster** (ZRO pattern). You don't always deploy your own borrow vault for every asset. If a USDC or ETH borrow vault already exists, you can add your token as collateral by: (a) deploying a Chainlink adapter for your token, (b) deploying your own borrow vault + router, (c) wiring `govSetConfig` + `govSetResolvedVault` into **both** your new router and the existing vault's router, and (d) calling `setLTV` on both vaults. Requires governor access to the existing vaults/routers. See `contracts/zro-contracts/` for the full pattern.

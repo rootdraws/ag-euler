@@ -46,7 +46,8 @@ euler-lite-frax/
 euler-lite-origin/
 
 # --- Reference Repos (standalone clones, not submodules) ---
-reference/
+reference/*
+!reference/funding-rate-calculator.md
 
 # --- Labels Repos (standalone, managed independently) ---
 balancer-labels/

@@ -25,11 +25,19 @@ Is collateral ERC-4626?
 │  ├─ YES → Use govSetResolvedVault (Origin pattern, zero custom contracts)
 │  └─ NO  → Need a Chainlink/Pyth adapter for the gap (check existing adapters below)
 └─ NO: Is there a Chainlink or Pyth feed for collateral/borrowAsset?
-   ├─ YES → Use existing adapter from the oracle registry
+   ├─ YES: Is the adapter already deployed on this chain? (check CSV below)
+   │  ├─ YES → Use existing adapter address directly
+   │  └─ NO  → Deploy a new ChainlinkOracle adapter (ZRO pattern, see Phase 2 step 0)
    └─ NO  → Write a custom oracle adapter (Cork pattern)
 ```
 
-### 0.3 Check Existing Oracle Adapters
+### 0.3 Adding to an Existing Cluster?
+
+If a borrow vault for your desired borrow asset (e.g. USDC, ETH) already exists and you want to add a new collateral type to it, you do NOT need to deploy a new borrow vault. **Skip to Phase 2B** instead of Phase 2.
+
+Key difference: you deploy only your token's vault + router, then wire into the existing cluster's routers and vaults. This requires governor access to the existing contracts. See `contracts/zro-contracts/` for the reference implementation.
+
+### 0.4 Check Existing Oracle Adapters
 
 Every chain has a CSV of deployed adapters:
 
@@ -39,7 +47,7 @@ reference/euler-interfaces/addresses/<chainId>/OracleAdaptersAddresses.csv
 
 Search it for your collateral/borrow tokens before building anything. If an adapter exists, note its address — you can wire it directly in step 5.
 
-### 0.4 Look Up Euler V2 Core Addresses
+### 0.5 Look Up Euler V2 Core Addresses
 
 All addresses live in the `reference/euler-interfaces/` submodule:
 
@@ -248,6 +256,25 @@ FEE_RECEIVER=0x4f894Bfc9481110278C356adE1473eBe2127Fd3C
 ## Phase 2: Deploy Contracts (The 7-Script Pattern)
 
 Run each script sequentially. Paste the output address into `.env` before running the next.
+
+### Step 0 (if needed): Deploy Chainlink Oracle Adapter
+
+If you need a Chainlink price feed and no adapter exists yet for your token pair on this chain (check the CSV from Phase 0), deploy one using the `ChainlinkOracle` from `reference/euler-price-oracle/src/adapter/chainlink/ChainlinkOracle.sol`:
+
+```solidity
+ChainlinkOracle adapter = new ChainlinkOracle(
+    baseToken,      // the token being priced (e.g. ZRO)
+    quoteToken,     // unit of account (e.g. address(840) for USD)
+    chainlinkFeed,  // the Chainlink aggregator address
+    maxStaleness    // heartbeat + buffer (e.g. 90000 for 24h heartbeat + 1h)
+);
+```
+
+The adapter calls `_getDecimals` on both tokens — addresses `<= 0xffffffff` (like USD `address(840)`) return 18 decimals automatically. `maxStaleness` must be between 1 minute and 72 hours.
+
+**Output:** `CHAINLINK_ADAPTER=0x...` → paste into `.env`
+
+See `contracts/zro-contracts/script/01_DeployChainlinkAdapter.s.sol` for a complete example.
 
 ### Step 1: Deploy IRM
 
@@ -659,6 +686,176 @@ forge script script/0<N>_<ScriptName>.s.sol \
 
 ---
 
+## Phase 2B: Adding a Token to an Existing Cluster
+
+Use this instead of Phase 2 when borrow vaults (e.g. USDC, ETH) already exist and you want to add a new collateral token that is also borrowable against those existing vaults.
+
+**Reference implementation:** `contracts/zro-contracts/` (ZRO added to existing USDC + ETH cluster on Base).
+
+### Prerequisites
+
+You need from the existing cluster deployer:
+
+```bash
+# Existing vault addresses
+USDC_BORROW_VAULT=0x...
+ETH_BORROW_VAULT=0x...
+
+# Existing oracle router addresses (one per vault)
+USDC_EULER_ROUTER=0x...
+ETH_EULER_ROUTER=0x...
+```
+
+The deployer running scripts that touch existing vaults/routers **must be governor** of those contracts.
+
+### Step 0: Deploy Oracle Adapter (if needed)
+
+If no adapter exists for your token on this chain, deploy a `ChainlinkOracle`:
+
+```solidity
+ChainlinkOracle adapter = new ChainlinkOracle(
+    newToken,        // e.g. ZRO
+    USD,             // address(840)
+    chainlinkFeed,   // the Chainlink aggregator
+    maxStaleness     // heartbeat + buffer
+);
+```
+
+Check `reference/euler-interfaces/addresses/<chainId>/OracleAdaptersAddresses.csv` first — if an adapter already exists, skip this step and use that address.
+
+### Step 1: Deploy IRM
+
+Deploy a KinkIRM for your new token's borrow market only. The existing vaults already have their own IRMs.
+
+```bash
+forge script script/02_DeployIRMs.s.sol --rpc-url base --broadcast --verify
+```
+
+### Step 2: Deploy Router
+
+Deploy an EulerRouter for your new vault. The existing vaults keep their own routers.
+
+```bash
+forge script script/03_DeployRouter.s.sol --rpc-url base --broadcast --verify
+```
+
+### Step 3: Deploy Your Borrow Vault
+
+Deploy one vault for your new token. `unitOfAccount` must match the existing cluster (typically USD).
+
+```solidity
+address vault = eVaultFactory.createProxy(
+    address(0), true,
+    abi.encodePacked(newToken, yourRouter, USD)
+);
+```
+
+### Step 4: Wire ALL Routers
+
+This is the critical step that differs from a standalone deployment. You must wire **your** router AND **every existing** router.
+
+**Your new router** needs adapters for every token in the cluster:
+
+```solidity
+// Price your own token + every existing collateral token in USD
+yourRouter.govSetConfig(newToken,      USD, newTokenAdapter);
+yourRouter.govSetConfig(existingToken, USD, existingTokenAdapter); // repeat per token
+
+// Resolve every existing vault you accept as collateral
+yourRouter.govSetResolvedVault(usdcVault, true);
+yourRouter.govSetResolvedVault(ethVault,  true);
+```
+
+**Each existing router** needs your token's adapter + resolved vault:
+
+```solidity
+// Add pricing for your token
+existingRouter.govSetConfig(newToken, USD, newTokenAdapter);
+
+// Resolve your vault so it can be used as collateral
+existingRouter.govSetResolvedVault(newVault, true);
+```
+
+**Governor requirement:** The caller must be governor of every router touched. If a co-worker deployed the existing cluster, they run this script.
+
+### Step 5: Configure Cluster
+
+Set IRM, caps, and liquidation params on your new vault. Then add `setLTV` on **both sides**:
+
+```solidity
+// Your vault accepts existing vaults as collateral
+IEVault(newVault).setLTV(usdcVault, borrowLTV, liqLTV, 0);
+IEVault(newVault).setLTV(ethVault,  borrowLTV, liqLTV, 0);
+
+// Existing vaults accept your vault as collateral
+IEVault(usdcVault).setLTV(newVault, borrowLTV, liqLTV, 0);
+IEVault(ethVault).setLTV(newVault,  borrowLTV, liqLTV, 0);
+```
+
+**Governor requirement:** Same as step 4 — caller must be governor of existing vaults.
+
+**Cap coordination:** Your token shares the existing vaults' supply/borrow caps with all other collateral types. Coordinate with the cluster owner to ensure caps account for your token's added exposure.
+
+### Step 6: Set Fee Receiver
+
+Set fee receiver on your new vault only. Existing vaults' fee receivers are unchanged.
+
+### Summary: Who Runs What
+
+| Step | Who runs it | Why |
+|---|---|---|
+| 0–3 | You (new token deployer) | Creates new contracts you own |
+| 4–5 | Existing cluster governor | Touches existing vaults/routers |
+| 6 | You | Only touches your new vault |
+
+If you and the cluster governor share a deployer key or multisig, one person runs everything.
+
+### Governance Handoff
+
+If two people are deploying into the same cluster, someone needs governor access to the other's contracts for steps 4–5. Two approaches:
+
+**Option A: Temporary transfer (pass the baton)**
+
+The existing cluster governor temporarily transfers governance to you, you run all scripts, then transfer back:
+
+```solidity
+// EulerRouter — single function
+router.transferGovernance(newGovernor);
+
+// eVault — different function name
+vault.setGovernorAdmin(newGovernorAdmin);
+```
+
+With `cast`:
+```bash
+# Transfer router governance
+cast send $ROUTER "transferGovernance(address)" $NEW_GOVERNOR \
+  --rpc-url $RPC --private-key $CURRENT_GOVERNOR_KEY
+
+# Transfer vault governance
+cast send $VAULT "setGovernorAdmin(address)" $NEW_GOVERNOR \
+  --rpc-url $RPC --private-key $CURRENT_GOVERNOR_KEY
+```
+
+**Option B: They run your scripts**
+
+Push your scripts to the shared repo. The existing governor pulls them, fills in `.env`, and runs steps 4–5 themselves. No governance transfer needed.
+
+**Option C: Multisig (long-term)**
+
+Deploy a Safe multisig, transfer all vaults + routers to it, both parties are signers. This is the right end state — do it before production regardless.
+
+**Checking current governor:**
+```bash
+# Router
+cast call $ROUTER "governor()(address)" --rpc-url $RPC
+
+# Vault
+cast call $VAULT "governorAdmin()(address)" --rpc-url $RPC
+```
+
+---
+
 ## File Index
 
 | What | Where |
@@ -667,6 +864,7 @@ forge script script/0<N>_<ScriptName>.s.sol \
 | Cork contracts (custom oracle/hook) | `contracts/cork-contracts/script/` + `contracts/cork-contracts/src/` |
 | Balancer contracts (multi-pool + adapter) | `contracts/balancer-contracts/script/` + `contracts/balancer-contracts/src/` |
 | Frax contracts (ICHI oracle + keeper) | `contracts/frax-contracts/script/` + `contracts/frax-contracts/ichi-oracle-kit/` |
+| ZRO contracts (add-to-cluster + Chainlink adapter) | `contracts/zro-contracts/script/` |
 | Consolidated labels (all partners) | `frontends/labels/alphagrowth/` (chains 1, 143, 8453) |
 | Consolidated frontend (all partners) | `frontends/alphagrowth/` |
 | Euler labels fork (official listing PRs) | `frontends/labels/euler-submission/euler-labels/` |
