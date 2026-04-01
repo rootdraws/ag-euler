@@ -1,0 +1,199 @@
+import {
+  type EulerLabelEntity,
+  type EulerLabelProduct,
+  eulerLabelProductEmpty,
+  type EulerLabelVaultOverride,
+} from '~/entities/euler/labels'
+import type { EarnVault, Vault } from '~/entities/vault'
+import type { OracleAdapterMeta } from '~/entities/oracle'
+import { normalizeAddress } from '~/utils/normalizeAddress'
+import {
+  products,
+  entities,
+  points,
+  earnVaultBlocks,
+  earnVaultRestrictions,
+  featuredEarnVaults,
+} from '~/utils/eulerLabelsState'
+
+// ── Normalization helpers ────────────────────────────────────
+
+export const extractVaultOverrides = (raw: Record<string, unknown>): Record<string, EulerLabelVaultOverride> => {
+  const overrides: Record<string, EulerLabelVaultOverride> = {}
+  for (const [key, value] of Object.entries(raw)) {
+    if (!key.startsWith('0x') || typeof value !== 'object' || value === null) continue
+    const entry = value as Record<string, unknown>
+    const override: EulerLabelVaultOverride = {}
+    if (typeof entry.description === 'string') override.description = entry.description
+    const reason = entry.deprecationReason ?? entry.deprecateReason
+    if (typeof reason === 'string') override.deprecationReason = reason
+    if (Array.isArray(entry.block)) override.block = entry.block.filter((v): v is string => typeof v === 'string')
+    if (Array.isArray(entry.restricted)) override.restricted = entry.restricted.filter((v): v is string => typeof v === 'string')
+    if (Object.keys(override).length > 0) {
+      overrides[normalizeAddress(key)] = override
+    }
+  }
+  return overrides
+}
+
+export const normalizeProducts = (data: Record<string, EulerLabelProduct>): { products: Record<string, EulerLabelProduct>, vaultAddresses: string[] } => {
+  const normalized: Record<string, EulerLabelProduct> = {}
+  const allVaults = new Set<string>()
+  Object.entries(data).forEach(([key, product]) => {
+    const normalizedVaults = product.vaults.map(normalizeAddress)
+    const normalizedDeprecated = (product.deprecatedVaults || []).map(normalizeAddress)
+    const fallbackReason = (product as { deprecateReason?: string }).deprecateReason
+    const vaultOverrides = extractVaultOverrides(product as unknown as Record<string, unknown>)
+    normalized[key] = {
+      ...product,
+      vaults: normalizedVaults,
+      deprecatedVaults: normalizedDeprecated,
+      deprecationReason: product.deprecationReason || fallbackReason,
+      vaultOverrides,
+    }
+    normalizedVaults.forEach(v => allVaults.add(v))
+    normalizedDeprecated.forEach(v => allVaults.add(v))
+  })
+  return { products: normalized, vaultAddresses: [...allVaults] }
+}
+
+export const normalizeEntities = (data: Record<string, EulerLabelEntity>) => {
+  const normalized: Record<string, EulerLabelEntity> = {}
+  Object.entries(data).forEach(([key, entity]) => {
+    const normalizedAddresses: Record<string, string> = {}
+    Object.entries(entity.addresses || {}).forEach(([address, label]) => {
+      normalizedAddresses[normalizeAddress(address)] = label
+    })
+    normalized[key] = {
+      ...entity,
+      addresses: normalizedAddresses,
+    }
+  })
+  return normalized
+}
+
+export const normalizeOracleAdapters = (data: unknown) => {
+  const normalized: Record<string, OracleAdapterMeta> = {}
+  const list = Array.isArray(data) ? data : ((data as { adapters?: unknown[] })?.adapters || [])
+
+  list.forEach((item) => {
+    if (!item || typeof item !== 'object') return
+    const raw = item as Record<string, unknown>
+    const oracle = raw.oracle || raw.adapter || raw.address
+    if (typeof oracle !== 'string') return
+
+    const base = raw.base || raw.baseAsset || raw.base_asset
+    const quote = raw.quote || raw.quoteAsset || raw.quote_asset
+    const baseAddress = typeof base === 'string' ? normalizeAddress(base) : undefined
+    const quoteAddress = typeof quote === 'string' ? normalizeAddress(quote) : undefined
+
+    const meta: OracleAdapterMeta = {
+      oracle: normalizeAddress(oracle),
+      base: baseAddress,
+      quote: quoteAddress,
+      name: typeof raw.name === 'string' ? raw.name : undefined,
+      provider: typeof raw.provider === 'string' ? raw.provider : undefined,
+      methodology: typeof raw.methodology === 'string' ? raw.methodology : undefined,
+      label: typeof raw.label === 'string' ? raw.label : undefined,
+      checks: Array.isArray(raw.checks) ? raw.checks.filter((v): v is string => typeof v === 'string') : undefined,
+    }
+
+    normalized[meta.oracle.toLowerCase()] = meta
+  })
+
+  return normalized
+}
+
+// ── Getters ──────────────────────────────────────────────────
+
+export const getProductByVault = (vaultAddress: string) => {
+  const normalized = normalizeAddress(vaultAddress)
+  return Object.values(products).find(product =>
+    product.vaults.includes(normalized)
+    || product.deprecatedVaults?.includes(normalized),
+  )
+  || eulerLabelProductEmpty
+}
+
+export const getProductKeyByVault = (vaultAddress: string): string | undefined => {
+  const normalized = normalizeAddress(vaultAddress)
+  return Object.keys(products).find((key) => {
+    const product = products[key]
+    return product.vaults.includes(normalized)
+      || product.deprecatedVaults?.includes(normalized)
+  })
+}
+
+export const getVaultBlock = (vaultAddress: string): string[] | undefined => {
+  const product = getProductByVault(vaultAddress)
+  const override = product.vaultOverrides?.[normalizeAddress(vaultAddress)]
+  return override?.block ?? product.block
+}
+
+export const getEarnVaultBlock = (vaultAddress: string): string[] | undefined => {
+  const normalized = normalizeAddress(vaultAddress).toLowerCase()
+  return earnVaultBlocks[normalized]
+}
+
+export const getVaultRestricted = (vaultAddress: string): string[] | undefined => {
+  const product = getProductByVault(vaultAddress)
+  return product.vaultOverrides?.[normalizeAddress(vaultAddress)]?.restricted
+}
+
+export const getEarnVaultRestricted = (vaultAddress: string): string[] | undefined => {
+  const normalized = normalizeAddress(vaultAddress).toLowerCase()
+  return earnVaultRestrictions[normalized]
+}
+
+export const isVaultFeatured = (vaultAddress: string): boolean => {
+  const normalized = normalizeAddress(vaultAddress)
+  const inFeaturedProduct = Object.values(products).some(product =>
+    product.featuredVaults?.includes(normalized) ?? false,
+  )
+  if (inFeaturedProduct) return true
+  return featuredEarnVaults.has(normalized)
+}
+
+export const isVaultDeprecated = (vaultAddress: string): boolean => {
+  const normalized = normalizeAddress(vaultAddress)
+  return Object.values(products).some(product =>
+    product.deprecatedVaults?.includes(normalized) ?? false,
+  )
+}
+
+export const getEntitiesByVault = (vault: Vault) => {
+  const arr: EulerLabelEntity[] = []
+  Object.values(entities).forEach((entity) => {
+    if (Object.keys(entity.addresses).includes(vault.governorAdmin)) {
+      arr.push(entity)
+    }
+  })
+  return arr
+}
+
+export const getEntitiesByEarnVault = (earnVault: EarnVault) => {
+  const arr: EulerLabelEntity[] = []
+  const ownerAddress = normalizeAddress(earnVault.owner)
+
+  Object.values(entities).forEach((entity) => {
+    if (entity.addresses && Object.keys(entity.addresses).includes(ownerAddress)) {
+      arr.push(entity)
+    }
+  })
+
+  return arr
+}
+
+export const getPointsByVault = (vaultAddress: string) => {
+  return points[normalizeAddress(vaultAddress)] || []
+}
+
+export const applyVaultOverrides = (product: EulerLabelProduct, vaultAddress: string): EulerLabelProduct => {
+  const override = product.vaultOverrides?.[normalizeAddress(vaultAddress)]
+  if (!override) return product
+  return {
+    ...product,
+    ...(override.description !== undefined && { description: override.description }),
+    ...(override.deprecationReason !== undefined && { deprecationReason: override.deprecationReason }),
+  }
+}

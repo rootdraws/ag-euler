@@ -1,0 +1,46 @@
+{
+	"alphagrowth": {
+		"name": "Alpha Growth",
+		"logo": "alphagrowth.svg",
+		"description": "DeFi risk curation and vault management.",
+		"url": "https://alphagrowth.io",
+		"addresses": {
+			"0x5304ebB378186b081B99dbb8B6D17d9005eA0448": "AlphaGrowth Curator Wallet"
+		},
+		"social": {
+			"twitter": "",
+			"youtube": "",
+			"discord": "",
+			"telegram": "",
+			"github": ""
+		}
+	},
+	"balancer": {
+		"name": "Balancer",
+		"logo": "balancer.png",
+		"description": "Programmable liquidity protocol powering efficient trading and yield.",
+		"url": "https://balancer.fi",
+		"addresses": {},
+		"social": {
+			"twitter": "Balancer",
+			"youtube": "",
+			"discord": "https://discord.balancer.fi/",
+			"telegram": "",
+			"github": "balancer"
+		}
+	},
+	"euler": {
+		"name": "Euler Finance",
+		"logo": "euler.svg",
+		"description": "Modular lending protocol.",
+		"url": "https://euler.finance",
+		"addresses": {},
+		"social": {
+			"twitter": "eulerfinance",
+			"youtube": "EulerFinance",
+			"discord": "https://discord.euler.finance/",
+			"telegram": "eulerfinance_official",
+			"github": "euler-xyz"
+		}
+	}
+}

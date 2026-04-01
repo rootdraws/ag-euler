@@ -1,0 +1,83 @@
+import { createError, getRequestURL, setResponseHeader, sendNoContent } from 'h3'
+import { logWarn } from '../utils/log'
+
+function parseAllowedOrigins(): Set<string> {
+  // CORS_ALLOWED_ORIGINS is the dedicated CORS var (comma-separated).
+  // Falls back to NUXT_PUBLIC_APP_URL (single origin used by Reown/AppKit).
+  const corsOrigins = process.env.CORS_ALLOWED_ORIGINS?.trim()
+  const appUrl = process.env.NUXT_PUBLIC_APP_URL?.trim()
+  const isDev = process.env.DOPPLER_ENVIRONMENT === 'dev'
+
+  const origins = new Set<string>()
+
+  if (isDev) {
+    const ports = [3000, 3001, 3002, 3003]
+    for (const port of ports) {
+      origins.add(`http://localhost:${port}`)
+      origins.add(`https://localhost:${port}`)
+      origins.add(`http://127.0.0.1:${port}`)
+      origins.add(`https://127.0.0.1:${port}`)
+    }
+  }
+
+  if (corsOrigins) {
+    corsOrigins.split(',').forEach(url => origins.add(url.trim()))
+  }
+  else if (appUrl && appUrl !== '*') {
+    origins.add(appUrl)
+  }
+
+  // Railway preview deployments: auto-allow the deployment's own domain
+  const railwayDomain = process.env.RAILWAY_PUBLIC_DOMAIN?.trim()
+  if (railwayDomain) {
+    origins.add(`https://${railwayDomain}`)
+  }
+
+  return origins
+}
+
+let allowedOrigins: Set<string> | null = null
+
+export default defineEventHandler((event) => {
+  if (!allowedOrigins) {
+    allowedOrigins = parseAllowedOrigins()
+  }
+
+  const rawCountry = event.node.req.headers['x-country-code']
+  const country = (typeof rawCountry === 'string' && /^[A-Z]{2}$/.test(rawCountry))
+    ? rawCountry
+    : undefined
+  if (country) {
+    setResponseHeader(event, 'x-country-code', country)
+  }
+
+  const url = getRequestURL(event)
+
+  if (!url.pathname.startsWith('/api/')) {
+    return
+  }
+
+  // Always set Vary: Origin so CDNs/proxies don't serve a cached
+  // response (including preflights) for one origin to another.
+  setResponseHeader(event, 'Vary', 'Origin')
+
+  const origin = event.node.req.headers.origin
+
+  if (origin && allowedOrigins.has(origin)) {
+    setResponseHeader(event, 'Access-Control-Allow-Origin', origin)
+  }
+  else if (origin && process.env.DOPPLER_ENVIRONMENT !== 'dev') {
+    if (allowedOrigins.size > 0) {
+      logWarn('cors', 'Rejected origin not in allow list:', origin)
+    }
+    throw createError({ statusCode: 403, statusMessage: 'Origin not allowed' })
+  }
+
+  setResponseHeader(event, 'Access-Control-Allow-Methods', 'POST, OPTIONS')
+  setResponseHeader(event, 'Access-Control-Allow-Headers', 'Content-Type')
+
+  if (event.node.req.method === 'OPTIONS') {
+    setResponseHeader(event, 'Access-Control-Max-Age', 86400)
+    return sendNoContent(event)
+  }
+})

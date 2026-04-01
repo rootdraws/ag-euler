@@ -1,0 +1,35 @@
+// Toast transitions
+:global(.toast-enter-active),
+:global(.toast-leave-active) {
+  transition: all 0.3s ease;
+}
+
+:global(.toast-enter-from) {
+  opacity: 0;
+  transform: translateX(100%);
+}
+
+:global(.toast-leave-to) {
+  opacity: 0;
+  transform: translateX(100%);
+}
+
+// Toast list transitions
+:global(.toast-list-enter-active),
+:global(.toast-list-leave-active) {
+  transition: all 0.3s ease;
+}
+
+:global(.toast-list-enter-from) {
+  opacity: 0;
+  transform: translateX(100%);
+}
+
+:global(.toast-list-leave-to) {
+  opacity: 0;
+  transform: translateX(100%);
+}
+
+:global(.toast-list-move) {
+  transition: transform 0.3s ease;
+}

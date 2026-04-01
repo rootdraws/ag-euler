@@ -1,0 +1,12 @@
+{
+	"0x42BA0a943EDcc846333642d62F500894b199A798": {
+		"name": "frxUSD Lending",
+		"description": "Lend frxUSD to earn yield from BRZ collateral borrowers.",
+		"entity": "frax"
+	},
+	"0x92f8b6bfC276E9A38545bE6517d3295593060D00": {
+		"name": "BRZ Token",
+		"description": "Collateral vault for direct BRZ (Brazilian Digital Real) token deposits. Priced via Chainlink BRZ/USD feed.",
+		"entity": "frax"
+	}
+}

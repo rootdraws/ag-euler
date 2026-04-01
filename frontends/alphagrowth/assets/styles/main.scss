@@ -1,0 +1,46 @@
+@use 'variables';
+@use 'modern-normalize';
+@use "fonts";
+@use "reset";
+@use 'transitions';
+@use '/components/ui/styles/main';
+
+html {
+  &.rtl {
+    direction: rtl;
+  }
+}
+
+body {
+  background-color: var(--bg-body);
+  color: var(--c-text);
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: 0;
+  -ms-text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color var(--trs-default);
+}
+
+.icon {
+  width: 24px;
+  height: 24px;
+}
+
+.auto-link a {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+
+  &:hover {
+    opacity: 0.8;
+  }
+}
+
+/* Theme-specific visibility utilities */
+[data-theme="dark"] .show-light { display: none !important; }
+[data-theme="dark"] .show-dark { display: block !important; }
+html:not([data-theme="dark"]) .show-dark { display: none !important; }
+html:not([data-theme="dark"]) .show-light { display: block !important; }

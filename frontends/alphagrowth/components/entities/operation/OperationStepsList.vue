@@ -1,0 +1,72 @@
+<script setup lang="ts">
+import type { DisplayStep } from '~/utils/stepDecoding'
+import { formatNumber } from '~/utils/string-utils'
+
+defineProps<{
+  steps: DisplayStep[]
+}>()
+</script>
+
+<template>
+  <div
+    v-for="step in steps"
+    :key="step.index"
+    class="flex justify-between items-center"
+  >
+    <div class="flex gap-6 items-center flex-wrap">
+      <p class="text-p3">
+        {{ step.index }}. {{ step.label }}
+      </p>
+      <template v-if="step.assetInfo">
+        <AssetAvatar
+          :asset="{ address: step.assetInfo.address || '', symbol: step.assetInfo.symbol }"
+          :icon-url="step.assetInfo.iconUrl"
+          size="16"
+        />
+        <p
+          v-if="!step.iconOnly"
+          class="text-p3"
+        >
+          <template v-if="step.assetInfo.amount === 'max' || step.assetInfo.amount === 'remaining'">
+            {{ step.assetInfo.amount }}&nbsp;
+          </template>
+          <template v-else-if="step.assetInfo.amount !== undefined">
+            {{ formatNumber(step.assetInfo.amount, 8, 0) }}&nbsp;
+          </template>{{ step.assetInfo.symbol }}
+        </p>
+      </template>
+      <p
+        v-if="step.labelSuffix"
+        class="text-p3"
+      >
+        {{ step.labelSuffix }}
+      </p>
+      <template v-if="step.toAssetInfo">
+        <p
+          v-if="!step.iconOnly"
+          class="text-p3 text-euler-dark-900"
+        >
+          &rarr;
+        </p>
+        <AssetAvatar
+          :asset="{ address: step.toAssetInfo.address || '', symbol: step.toAssetInfo.symbol }"
+          size="16"
+        />
+        <p
+          v-if="!step.iconOnly"
+          class="text-p3"
+        >
+          <template v-if="step.toAssetInfo.amount !== undefined">
+            {{ formatNumber(step.toAssetInfo.amount, 8, 0) }}&nbsp;
+          </template>{{ step.toAssetInfo.symbol }}
+        </p>
+      </template>
+    </div>
+    <span
+      v-if="step.isSeparateTx"
+      class="text-p4 text-euler-dark-900"
+    >
+      Separate tx
+    </span>
+  </div>
+</template>

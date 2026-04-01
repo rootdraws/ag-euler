@@ -1,0 +1,32 @@
+{
+	"0x438cedcE647491B1d93a73d491eC19A50194c222": {
+		"name": "AUSD Borrow Vault",
+		"description": "Borrow AUSD against Balancer BPT collateral.",
+		"entity": "alphagrowth"
+	},
+	"0x75B6C392f778B8BCf9bdB676f8F128b4dD49aC19": {
+		"name": "WMON Borrow Vault",
+		"description": "Borrow WMON against Balancer BPT collateral.",
+		"entity": "alphagrowth"
+	},
+	"0x5795130BFb9232C7500C6E57A96Fdd18bFA60436": {
+		"name": "wnAUSD/wnUSDC/wnUSDT0 BPT",
+		"description": "Collateral vault for Balancer stablecoin pool BPT.",
+		"entity": "balancer"
+	},
+	"0x578c60e6Df60336bE41b316FDE74Aa3E2a4E0Ea5": {
+		"name": "sMON/wnWMON BPT (Kintsu)",
+		"description": "Collateral vault for Balancer sMON/WMON pool BPT.",
+		"entity": "balancer"
+	},
+	"0x6660195421557BC6803e875466F99A764ae49Ed7": {
+		"name": "shMON/wnWMON BPT (Fastlane)",
+		"description": "Collateral vault for Balancer shMON/WMON pool BPT.",
+		"entity": "balancer"
+	},
+	"0x175831aF06c30F2EA5EA1e3F5EBA207735Eb9F92": {
+		"name": "wnLOAZND/AZND/wnAUSD BPT",
+		"description": "Collateral vault for Balancer AZND stablecoin pool BPT.",
+		"entity": "balancer"
+	}
+}

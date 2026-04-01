@@ -1,0 +1,406 @@
+import type { Ref, ComputedRef } from 'vue'
+import { useAccount } from '@wagmi/vue'
+import { formatUnits, zeroAddress, type Address } from 'viem'
+import { logWarn } from '~/utils/errorHandling'
+import { useModal } from '~/components/ui/composables/useModal'
+import { OperationReviewModal } from '#components'
+import { useToast } from '~/components/ui/composables/useToast'
+import type { Vault } from '~/entities/vault'
+import { getAssetUsdValue } from '~/services/pricing/priceProvider'
+import type { AccountBorrowPosition } from '~/entities/account'
+import type { TxPlan } from '~/entities/txPlan'
+import { SwapperMode } from '~/entities/swap'
+import { useRepaySavingsOptions } from '~/composables/useRepaySavingsOptions'
+import { useEulerProductOfVault } from '~/composables/useEulerLabels'
+import { useRepaySwapCore } from '~/composables/repay/useRepaySwapCore'
+import { useRepaySwapDetails } from '~/composables/repay/useRepaySwapDetails'
+import { useRepayHealthMetrics } from '~/composables/repay/useRepayHealthMetrics'
+import { nanoToValue, valueToNano } from '~/utils/crypto-utils'
+import { trimTrailingZeros } from '~/utils/string-utils'
+import { createRaceGuard } from '~/utils/race-guard'
+
+interface UseSavingsRepayOptions {
+  position: Ref<AccountBorrowPosition | undefined>
+  borrowVault: ComputedRef<AccountBorrowPosition['borrow'] | undefined>
+  collateralVault: ComputedRef<AccountBorrowPosition['collateral'] | undefined>
+  formTab: Ref<string>
+  plan: Ref<TxPlan | null>
+  isSubmitting: Ref<boolean>
+  isPreparing: Ref<boolean>
+  slippage: Ref<number>
+  oraclePriceRatio: ComputedRef<number | null>
+  clearSimulationError: () => void
+  runSimulation: (plan: TxPlan) => Promise<boolean>
+  getCurrentDebt: () => bigint
+  collateralSupplyApy: ComputedRef<number>
+  borrowApy: ComputedRef<number>
+}
+
+export const useSavingsRepay = (options: UseSavingsRepayOptions) => {
+  const {
+    position,
+    borrowVault,
+    collateralVault,
+    formTab,
+    plan,
+    isSubmitting,
+    isPreparing,
+    slippage,
+    oraclePriceRatio,
+    clearSimulationError,
+    runSimulation,
+    getCurrentDebt,
+    collateralSupplyApy,
+    borrowApy,
+  } = options
+
+  const router = useRouter()
+  const modal = useModal()
+  const { error } = useToast()
+  const { isConnected, address } = useAccount()
+  const { buildSwapPlan, buildSavingsRepayPlan, buildSavingsFullRepayPlan, buildSwapFullRepayPlan, executeTxPlan } = useEulerOperations()
+  const { refreshAllPositions } = useEulerAccount()
+  const { eulerLensAddresses } = useEulerAddresses()
+
+  // --- Savings options ---
+  const { savingsPositions, savingsVaults, savingsOptions, getSavingsPosition } = useRepaySavingsOptions()
+
+  // --- Source vault state ---
+  const sourceVault: Ref<Vault | undefined> = ref()
+  const sourceAssets = ref(0n)
+  const sourceBalance = computed(() => sourceAssets.value)
+  const debtBalance = computed(() => position.value?.borrowed || 0n)
+
+  const priceInvert = usePriceInvert(
+    () => sourceVault.value?.asset.symbol,
+    () => borrowVault.value?.asset.symbol,
+  )
+  const sourceProduct = useEulerProductOfVault(computed(() => sourceVault.value?.address || ''))
+
+  // --- Core swap logic ---
+  const core = useRepaySwapCore({
+    position,
+    borrowVault,
+    sourceVault,
+    sourceBalance,
+    formTab,
+    formTabName: 'savings',
+    slippage,
+    clearSimulationError,
+    getCurrentDebt,
+    getQuoteAccounts: () => {
+      const savingsPos = sourceVault.value ? getSavingsPosition(sourceVault.value.address) : undefined
+      const savingsSubAccount = (savingsPos?.subAccount || address.value || zeroAddress) as Address
+      const borrowSubAccount = (position.value?.subAccount || address.value || zeroAddress) as Address
+      return { accountIn: savingsSubAccount, accountOut: borrowSubAccount }
+    },
+    onQuoteReceived: (amountOut, dir) => {
+      if (dir !== SwapperMode.EXACT_IN) return false
+      const currentDebt = position.value?.borrowed || 0n
+      if (amountOut >= currentDebt && currentDebt > 0n && borrowVault.value) {
+        core.direction.value = SwapperMode.TARGET_DEBT
+        core.debtPercent.value = 100
+        core.debtAmount.value = trimTrailingZeros(formatUnits(currentDebt, Number(borrowVault.value.asset.decimals)))
+        core.requestQuote()
+        return true
+      }
+      return false
+    },
+  })
+
+  // --- Swap details ---
+  const details = useRepaySwapDetails({
+    quotes: core.quotes,
+    sourceVault,
+    borrowVault,
+    direction: core.direction,
+  })
+
+  // --- Savings-specific computeds ---
+  const collateralAmountAfter = computed(() => {
+    if (!collateralVault.value || !position.value) return null
+    return nanoToValue(position.value.supplied || 0n, collateralVault.value.decimals)
+  })
+
+  const nextLiquidationLtv = computed(() => {
+    if (!position.value) return null
+    return nanoToValue(position.value.liquidationLTV, 2)
+  })
+
+  // --- 4th USD watcher: primary collateral value (unchanged for savings) ---
+  const savingsCollateralUsdGuard = createRaceGuard()
+  const savingsCollateralUsd = ref<number | null>(null)
+
+  watchEffect(async () => {
+    if (!collateralVault.value || !position.value) {
+      savingsCollateralUsd.value = null
+      return
+    }
+    const gen = savingsCollateralUsdGuard.next()
+    const result = (await getAssetUsdValue(position.value.supplied || 0n, collateralVault.value, 'off-chain')) ?? null
+    if (savingsCollateralUsdGuard.isStale(gen)) return
+    savingsCollateralUsd.value = result
+  })
+
+  // --- Health metrics ---
+  const health = useRepayHealthMetrics({
+    position,
+    borrowVault,
+    debtRepaid: core.debtRepaid,
+    priceRatio: oraclePriceRatio,
+    nextLiquidationLtv,
+    collateralAmountAfter,
+    collateralSupplyApy,
+    borrowApy,
+    collateralValueUsd: savingsCollateralUsd,
+    nextCollateralValueUsd: savingsCollateralUsd,
+    borrowValueUsd: core.borrowValueUsd,
+    nextBorrowValueUsd: core.nextBorrowValueUsd,
+  })
+
+  // --- Submit disabled ---
+  const isSubmitDisabled = computed(() => {
+    if (!isConnected.value) return false
+    if (!sourceVault.value || !borrowVault.value) return true
+    if (!core.debtAmount.value && !core.amount.value) return true
+    if (core.spent.value !== null && core.spent.value > sourceBalance.value) return true
+    if (core.isSameAsset.value) return false
+    if (core.quotes.quoteError.value) return true
+    if (!core.quotes.selectedQuote.value) return true
+    return false
+  })
+
+  const disabledReason = computed(() => {
+    if (core.spent.value !== null && core.spent.value > sourceBalance.value) {
+      return 'Insufficient savings balance to cover the required swap amount.'
+    }
+    return undefined
+  })
+
+  // --- Balance ---
+  const updateSourceBalance = () => {
+    if (!sourceVault.value) {
+      sourceAssets.value = 0n
+      return
+    }
+    const pos = getSavingsPosition(sourceVault.value.address)
+    sourceAssets.value = pos?.assets || 0n
+  }
+
+  watch(sourceVault, () => {
+    updateSourceBalance()
+  })
+
+  // --- Build / Submit / Send ---
+  const buildRepayPlan = async (): Promise<TxPlan> => {
+    if (!position.value || !borrowVault.value || !sourceVault.value) {
+      throw new Error('Position or vaults not loaded')
+    }
+
+    const savingsPos = getSavingsPosition(sourceVault.value.address)
+    if (!savingsPos) {
+      throw new Error('Savings position not found')
+    }
+
+    if (core.isSameAsset.value) {
+      const debtNano = core.debtAmount.value
+        ? valueToNano(core.debtAmount.value, borrowVault.value.asset.decimals)
+        : valueToNano(core.amount.value, sourceVault.value.asset.decimals)
+      const currentDebtVal = getCurrentDebt()
+      const isFullRepay = debtNano >= currentDebtVal
+
+      if (isFullRepay) {
+        return buildSavingsFullRepayPlan({
+          savingsVaultAddress: sourceVault.value.address,
+          borrowVaultAddress: borrowVault.value.address,
+          amount: currentDebtVal,
+          savingsSubAccount: savingsPos.subAccount,
+          borrowSubAccount: position.value.subAccount,
+          enabledCollaterals: position.value.collaterals,
+        })
+      }
+      return buildSavingsRepayPlan({
+        savingsVaultAddress: sourceVault.value.address,
+        borrowVaultAddress: borrowVault.value.address,
+        amount: debtNano,
+        savingsSubAccount: savingsPos.subAccount,
+        borrowSubAccount: position.value.subAccount,
+      })
+    }
+
+    if (!core.quotes.selectedQuote.value) {
+      throw new Error('No quote selected')
+    }
+
+    const currentDebt = getCurrentDebt()
+    const swapMode = core.direction.value
+    let targetDebt = 0n
+    if (swapMode === SwapperMode.TARGET_DEBT && core.debtAmount.value) {
+      const debtAmountNano = valueToNano(core.debtAmount.value, borrowVault.value.asset.decimals)
+      targetDebt = debtAmountNano >= currentDebt ? 0n : currentDebt - debtAmountNano
+    }
+
+    const isFullRepay = targetDebt === 0n && swapMode === SwapperMode.TARGET_DEBT
+    if (isFullRepay) {
+      return buildSwapFullRepayPlan({
+        quote: core.quotes.selectedQuote.value,
+        swapperMode: swapMode,
+        targetDebt,
+        currentDebt,
+        liabilityVault: borrowVault.value.address,
+        enabledCollaterals: position.value.collaterals,
+        source: 'savings',
+      })
+    }
+
+    return buildSwapPlan({
+      quote: core.quotes.selectedQuote.value,
+      swapperMode: swapMode,
+      isRepay: true,
+      targetDebt,
+      currentDebt,
+      liabilityVault: borrowVault.value.address,
+      enabledCollaterals: position.value.collaterals,
+    })
+  }
+
+  const submit = async () => {
+    if (isPreparing.value || isSubmitting.value || !position.value || !borrowVault.value || !sourceVault.value) return
+    if (!core.isSameAsset.value && !core.quotes.selectedQuote.value) return
+
+    isPreparing.value = true
+    try {
+      try {
+        plan.value = await buildRepayPlan()
+      }
+      catch (e) {
+        logWarn('savingsRepay/buildPlan', e)
+        plan.value = null
+      }
+
+      if (plan.value) {
+        const ok = await runSimulation(plan.value)
+        if (!ok) return
+      }
+
+      const transferAmounts: Record<string, string> = {}
+      if (collateralVault.value && position.value?.supplied) {
+        const addr = collateralVault.value.address.toLowerCase()
+        transferAmounts[addr] = nanoToValue(position.value.supplied, collateralVault.value.decimals).toString()
+      }
+
+      modal.open(OperationReviewModal, {
+        props: {
+          type: 'repay',
+          asset: sourceVault.value.asset,
+          amount: core.amount.value,
+          swapToAsset: !core.isSameAsset.value ? borrowVault.value.asset : undefined,
+          swapToAmount: !core.isSameAsset.value ? core.debtAmount.value : undefined,
+          plan: plan.value || undefined,
+          subAccount: position.value?.subAccount,
+          hasBorrows: (position.value?.borrowed || 0n) > 0n,
+          transferAmounts,
+          onConfirm: () => {
+            setTimeout(() => {
+              send()
+            }, 400)
+          },
+        },
+      })
+    }
+    finally {
+      isPreparing.value = false
+    }
+  }
+
+  const send = async () => {
+    if (!position.value || !borrowVault.value || !sourceVault.value) return
+    if (!core.isSameAsset.value && !core.quotes.selectedQuote.value) return
+    try {
+      isSubmitting.value = true
+      const txPlan = await buildRepayPlan()
+      await executeTxPlan(txPlan)
+
+      modal.close()
+      refreshAllPositions(eulerLensAddresses.value, address.value as string)
+      setTimeout(() => {
+        router.replace('/portfolio')
+      }, 400)
+    }
+    catch (e) {
+      error('Transaction failed')
+      logWarn('savingsRepay/send', e)
+    }
+    finally {
+      isSubmitting.value = false
+    }
+  }
+
+  const initVault = () => {
+    if (savingsVaults.value.length > 0) {
+      sourceVault.value = savingsVaults.value[0] as Vault
+      updateSourceBalance()
+    }
+  }
+
+  const resetOnTabSwitch = () => {
+    core.resetCore()
+    core.debtPercent.value = 0
+  }
+
+  const onSourceVaultChange = (selectedIndex: number) => {
+    core.onSourceVaultChange(selectedIndex, savingsVaults)
+  }
+
+  return {
+    // State
+    sourceVault,
+    amount: core.amount,
+    debtAmount: core.debtAmount,
+    direction: core.direction,
+    debtPercent: core.debtPercent,
+    sourceAssets,
+    sourceBalance,
+    debtBalance,
+    priceInvert,
+    sourceProduct,
+    savingsPositions,
+    savingsVaults,
+    savingsOptions,
+    quotes: core.quotes,
+    isSameAsset: core.isSameAsset,
+    spent: core.spent,
+    debtRepaid: core.debtRepaid,
+    // Health metrics
+    roeBefore: health.roeBefore,
+    roeAfter: health.roeAfter,
+    currentHealth: health.currentHealth,
+    currentLtv: health.currentLtv,
+    nextLtv: health.nextLtv,
+    nextHealth: health.nextHealth,
+    currentLiquidationPrice: health.currentLiquidationPrice,
+    nextLiquidationPrice: health.nextLiquidationPrice,
+    // Swap details
+    currentPrice: details.currentPrice,
+    summary: details.summary,
+    priceImpact: details.priceImpact,
+    leveragedPriceImpact: details.leveragedPriceImpact,
+    routedVia: details.routedVia,
+    routeEmptyMessage: details.routeEmptyMessage,
+    routeItems: details.routeItems,
+    // Submit
+    isSubmitDisabled,
+    disabledReason,
+    // Handlers
+    onAmountInput: core.onAmountInput,
+    onDebtInput: core.onDebtInput,
+    onPercentInput: core.onPercentInput,
+    onSourceVaultChange,
+    onRefreshQuotes: core.onRefreshQuotes,
+    submit,
+    send,
+    updateSourceBalance,
+    initVault,
+    resetOnTabSwitch,
+  }
+}

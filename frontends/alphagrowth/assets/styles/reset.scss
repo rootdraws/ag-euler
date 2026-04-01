@@ -1,0 +1,63 @@
+p, ul {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+button {
+  background-color: transparent;
+  border: 0;
+  padding: 0;
+  appearance: none;
+  user-select: none;
+  color: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+input,
+label,
+select,
+button,
+textarea {
+  display: inline-block;
+  vertical-align: middle;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-size: inherit;
+  font-family: inherit;
+  line-height: inherit;
+  white-space: normal;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+ul {
+  padding-left: 0;
+  list-style: none;
+
+  .rtl & {
+    padding-right: 0;
+  }
+}
+
+textarea {
+  padding: 0;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 0;
+  font-weight: normal;
+  font-size: inherit;
+}
+
+strong {
+  font-weight: normal;
+}

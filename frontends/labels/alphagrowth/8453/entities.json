@@ -1,0 +1,72 @@
+{
+	"alphagrowth": {
+		"name": "Alpha Growth",
+		"logo": "alphagrowth.svg",
+		"description": "DeFi risk curation and vault management.",
+		"url": "https://alphagrowth.io",
+		"addresses": {},
+		"social": {
+			"twitter": "",
+			"youtube": "",
+			"discord": "",
+			"telegram": "",
+			"github": ""
+		}
+	},
+	"frax": {
+		"name": "Frax Finance",
+		"logo": "frax.svg",
+		"description": "Fractional-algorithmic stablecoin protocol. frxUSD is Frax's fully collateralized USD stablecoin.",
+		"url": "https://frax.finance",
+		"addresses": {},
+		"social": {
+			"twitter": "fraboratory",
+			"youtube": "",
+			"discord": "https://discord.gg/frax",
+			"telegram": "fraboratory",
+			"github": "FraxFinance"
+		}
+	},
+	"ichi": {
+		"name": "ICHI",
+		"logo": "ichi.svg",
+		"description": "Automated concentrated liquidity management vaults. Single-sided deposits for optimized LP yield.",
+		"url": "https://ichi.org",
+		"addresses": {},
+		"social": {
+			"twitter": "ichifoundation",
+			"youtube": "",
+			"discord": "https://discord.gg/ichi",
+			"telegram": "",
+			"github": "ichifarm"
+		}
+	},
+	"hydrex": {
+		"name": "Hydrex",
+		"logo": "hydrex.svg",
+		"description": "Algebra V3 DEX on Base featuring concentrated liquidity with built-in TWAP oracle plugins.",
+		"url": "https://hydrex.io",
+		"addresses": {},
+		"social": {
+			"twitter": "",
+			"youtube": "",
+			"discord": "",
+			"telegram": "",
+			"github": ""
+		}
+	},
+	"euler": {
+		"name": "Euler Finance",
+		"logo": "euler.svg",
+		"description": "Modular lending protocol.",
+		"url": "https://euler.finance",
+		"addresses": {},
+		"social": {
+			"twitter": "eulerfinance",
+			"youtube": "EulerFinance",
+			"discord": "https://discord.euler.finance/",
+			"telegram": "eulerfinance_official",
+			"github": "euler-xyz"
+		}
+	}
+}

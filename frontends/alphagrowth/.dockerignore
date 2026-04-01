@@ -1,0 +1,11 @@
+node_modules
+.nuxt
+.output
+.git
+.env*
+!.env.example
+docs/
+*.md
+.vscode
+.idea
+.claude

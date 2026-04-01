@@ -1,0 +1,342 @@
+:root {
+  // Brand hue (overridden at runtime from custom.ts)
+  --brand-hue: 211deg;
+  --brand-accent-hue: calc(var(--brand-hue) - 45deg);
+
+  // ============================================
+  // INSTITUTIONAL COLOR PALETTE
+  // ============================================
+
+  // Primary - Professional Navy
+  --primary-50: #f0f4f8;
+  --primary-100: #d9e2ec;
+  --primary-200: #bcccdc;
+  --primary-300: #9fb3c8;
+  --primary-400: #829ab1;
+  --primary-500: #627d98;
+  --primary-600: #486581;
+  --primary-700: #334e68;
+  --primary-800: #243b53;
+  --primary-900: #102a43;
+
+  // Accent - Sophisticated Gold/Bronze (for CTAs, APY highlights)
+  --accent-300: #0A0A0A;
+  --accent-400: #0A0A0A;
+  --accent-500: #0A0A0A;
+  --accent-600: #0A0A0A;
+  --accent-700: #0A0A0A;
+
+  // Neutral - Warm Grays
+  --neutral-50: #fafafa;
+  --neutral-100: #f5f5f5;
+  --neutral-200: #e5e5e5;
+  --neutral-300: #d4d4d4;
+  --neutral-400: #a3a3a3;
+  --neutral-500: #737373;
+  --neutral-600: #525252;
+  --neutral-700: #404040;
+  --neutral-800: #262626;
+  --neutral-900: #171717;
+
+  // Semantic Colors
+  --success-100: #d1fae5;
+  --success-500: #059669;
+  --success-600: #047857;
+  --warning-100: #fef3c7;
+  --warning-500: #d97706;
+  --error-100: #fee2e2;
+  --error-500: #dc2626;
+
+  // ============================================
+  // SHADOW SYSTEM (Apple-like depth)
+  // ============================================
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
+  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+
+  // Interactive shadows
+  --shadow-button: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-button-hover: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --shadow-card: var(--shadow-sm);
+  --shadow-card-hover: var(--shadow-md);
+
+  // ============================================
+  // ANIMATION TIMING (Apple-style)
+  // ============================================
+  --ease-default: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  --duration-fast: 150ms;
+  --duration-default: 250ms;
+  --duration-slow: 350ms;
+
+  // ============================================
+  // BORDER RADIUS (Refined, Apple-like)
+  // ============================================
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 12px;
+  --radius-2xl: 16px;
+  --radius-full: 9999px;
+
+  // ============================================
+  // LEGACY COLORS (kept for compatibility)
+  // ============================================
+  --white: 255, 255, 255;
+  --black: 0, 0, 0;
+
+  --red-600: 192, 39, 35;
+  --red-700: 205, 82, 79;
+  --red-800: 217, 125, 123;
+  --red-1000: 242, 212, 211;
+
+  --green-600: 98, 173, 75;
+  --green-1000: 224, 239, 220;
+
+  --yellow-600: 236, 192, 51;
+  --yellow-700: 240, 205, 92;
+  --yellow-1000: 251, 242, 214;
+
+  --orange-1000: 252, 235, 211;
+
+  --yellow-warning-700: 223, 178, 4;
+  --slice-of-heaven-300: 197, 198, 247;
+
+  --border-primary: 0 0% 90%;
+
+  // Brand palette - INSTITUTIONAL LIGHT THEME
+  // (Re-mapped: 100=darkest, 1000=lightest for light theme)
+  --euler-dark-100: 0 0% 98%; // Near white - page bg
+  --euler-dark-200: 0 0% 96%; // Slightly darker - subtle bg
+  --euler-dark-300: 0 0% 98%; // Body background
+  --euler-dark-400: 0 0% 100%; // Card background (white)
+  --euler-dark-500: 0 0% 100%; // Card/surface background
+  --euler-dark-600: 0 0% 90%; // Borders
+  --euler-dark-700: 210 11% 71%; // Muted text (--neutral-400)
+  --euler-dark-800: 210 9% 45%; // Secondary text (--neutral-500)
+  --euler-dark-900: 210 11% 32%; // Body text (--neutral-600)
+  --euler-dark-1000: 210 11% 15%; // Primary text (--neutral-800)
+
+  // Accent palette - Gold/Bronze for institutional look
+  --aquamarine-300: 36 56% 35%; // Dark gold
+  --aquamarine-500: 36 56% 50%; // Medium gold
+  --aquamarine-600: 36 56% 55%; // Gold
+  --aquamarine-700: 36 56% 58%; // Primary accent (gold)
+  --aquamarine-800: 36 56% 65%; // Lighter gold
+  --aquamarine-900: 36 56% 75%; // Very light gold
+  --aquamarine-1000: 36 56% 30%; // Gold for text on light bg
+
+  --teal-light-100: 235, 249, 249;
+  --teal-light-300: 177, 230, 231;
+
+  // RGB Colors
+  --c-white: rgb(var(--white));
+  --c-black: rgb(var(--black));
+
+  --c-red-600: rgb(var(--red-600));
+  --c-red-700: rgb(var(--red-700));
+  --c-red-800: rgb(var(--red-800));
+  --c-red-1000: rgb(var(--red-1000));
+
+  --c-green-600: rgb(var(--green-600));
+  --c-green-1000: rgb(var(--green-1000));
+
+  --c-yellow-600: rgb(var(--yellow-600));
+  --c-yellow-700: rgb(var(--yellow-700));
+  --c-yellow-1000: rgb(var(--yellow-1000));
+
+  --c-orange-1000: rgb(var(--orange-1000));
+
+  --c-yellow-warning-700: rgb(var(--yellow-warning-700));
+  --c-slice-of-heaven-300: rgb(var(--slice-of-heaven-300));
+
+  --c-red-opaque-200: rgba(var(--red-600), 0.1);
+  --c-red-opaque-300: rgba(var(--red-600), 0.2);
+  --c-red-opaque-400: rgba(var(--red-600), 0.3);
+  --c-red-opaque-500: rgba(var(--red-600), 0.4);
+  --c-red-opaque-600: rgba(var(--red-600), 0.5);
+  --c-red-opaque-700: rgba(var(--red-600), 0.6);
+  --c-red-opaque-800: rgba(var(--red-600), 0.7);
+  --c-red-opaque-900: rgba(var(--red-600), 0.8);
+  --c-red-opaque-1000: rgba(var(--red-600), 0.9);
+
+  --c-green-opaque-200: rgba(var(--green-600), 0.1);
+  --c-green-opaque-300: rgba(var(--green-600), 0.2);
+  --c-green-opaque-400: rgba(var(--green-600), 0.3);
+  --c-green-opaque-500: rgba(var(--green-600), 0.4);
+  --c-green-opaque-600: rgba(var(--green-600), 0.5);
+  --c-green-opaque-700: rgba(var(--green-600), 0.6);
+  --c-green-opaque-800: rgba(var(--green-600), 0.7);
+  --c-green-opaque-900: rgba(var(--green-600), 0.8);
+  --c-green-opaque-1000: rgba(var(--green-600), 0.9);
+
+  --c-yellow-opaque-200: rgba(var(--yellow-600), 0.1);
+  --c-yellow-opaque-300: rgba(var(--yellow-600), 0.2);
+  --c-yellow-opaque-400: rgba(var(--yellow-600), 0.3);
+  --c-yellow-opaque-500: rgba(var(--yellow-600), 0.4);
+  --c-yellow-opaque-600: rgba(var(--yellow-600), 0.5);
+  --c-yellow-opaque-700: rgba(var(--yellow-600), 0.6);
+  --c-yellow-opaque-800: rgba(var(--yellow-600), 0.7);
+  --c-yellow-opaque-900: rgba(var(--yellow-600), 0.8);
+  --c-yellow-opaque-1000: rgba(var(--yellow-600), 0.9);
+
+  --c-euler-dark-100: hsl(var(--euler-dark-100));
+  --c-euler-dark-200: hsl(var(--euler-dark-200));
+  --c-euler-dark-300: hsl(var(--euler-dark-300));
+  --c-euler-dark-400: hsl(var(--euler-dark-400));
+  --c-euler-dark-500: hsl(var(--euler-dark-500));
+  --c-euler-dark-600: hsl(var(--euler-dark-600));
+  --c-euler-dark-700: hsl(var(--euler-dark-700));
+  --c-euler-dark-800: hsl(var(--euler-dark-800));
+  --c-euler-dark-900: hsl(var(--euler-dark-900));
+  --c-euler-dark-1000: hsl(var(--euler-dark-1000));
+
+  --c-aquamarine-300: hsl(var(--aquamarine-300));
+  --c-aquamarine-500: hsl(var(--aquamarine-500));
+  --c-aquamarine-600: hsl(var(--aquamarine-600));
+  --c-aquamarine-700: hsl(var(--aquamarine-700));
+  --c-aquamarine-800: hsl(var(--aquamarine-800));
+  --c-aquamarine-900: hsl(var(--aquamarine-900));
+  --c-aquamarine-1000: hsl(var(--aquamarine-1000));
+
+  --c-aquamarine-opaque-200: hsl(var(--aquamarine-700) / 0.1);
+  --c-aquamarine-opaque-300: hsl(var(--aquamarine-700) / 0.2);
+  --c-aquamarine-opaque-400: hsl(var(--aquamarine-700) / 0.3);
+  --c-aquamarine-opaque-500: hsl(var(--aquamarine-700) / 0.4);
+  --c-aquamarine-opaque-600: hsl(var(--aquamarine-700) / 0.5);
+  --c-aquamarine-opaque-700: hsl(var(--aquamarine-700) / 0.6);
+  --c-aquamarine-opaque-800: hsl(var(--aquamarine-700) / 0.7);
+  --c-aquamarine-opaque-900: hsl(var(--aquamarine-700) / 0.8);
+  --c-aquamarine-opaque-1000: hsl(var(--aquamarine-700) / 0.9);
+
+  --c-teal-light-100: rgb(var(--teal-light-100));
+  --c-teal-light-300: rgb(var(--teal-light-300));
+
+  --c-border-primary: hsl(var(--border-primary));
+}
+
+:root {
+  // ============================================
+  // SEMANTIC THEME VARIABLES
+  // ============================================
+
+  // Backgrounds
+  --bg-body: var(--neutral-50);
+  --bg-surface: #ffffff;
+  --bg-surface-secondary: var(--neutral-50);
+  --bg-surface-elevated: #ffffff;
+  --bg-card: #ffffff;
+  --bg-card-hover: var(--neutral-50);
+  --bg-header: rgba(255, 255, 255, 0.85);
+
+  // Text
+  --c-text: var(--neutral-800);
+  --text-primary: var(--neutral-900);
+  --text-secondary: var(--neutral-600);
+  --text-tertiary: var(--neutral-500);
+  --text-muted: var(--neutral-400);
+  --text-inverse: #ffffff;
+  --text-accent: var(--accent-600);
+
+  // Borders
+  --border-default: var(--neutral-200);
+  --border-subtle: rgba(0, 0, 0, 0.06);
+  --border-emphasis: var(--neutral-300);
+
+  // Grid
+  --header-h: 72px;
+  --menu-h: 64px;
+  --container-w: 1200px;
+  --container-padding: 0 24px;
+  --container-padding-condensed: 0 12px;
+  --container-padding-side: 24px;
+
+  // Transitions
+  --trs-default: 0.25s var(--ease-default);
+  --trs-slow: 0.35s var(--ease-default);
+  --trs-fast: 0.15s var(--ease-default);
+
+  // Skeleton
+  --skeleton-background: linear-gradient(90deg, rgba(0, 0, 0, 0) 0%, var(--neutral-200) 25%, rgba(0, 0, 0, 0) 50%);
+  --skeleton-background-gray: linear-gradient(90deg, rgba(0, 0, 0, 0) 0%, var(--neutral-100) 25%, rgba(0, 0, 0, 0) 50%);
+  --skeleton-animation-duration: 2s;
+  --skeleton-animation: skeleton-animation var(--skeleton-animation-duration) infinite linear;
+}
+
+// ============================================
+// DARK THEME
+// ============================================
+[data-theme="dark"] {
+  // Override neutral palette for dark mode
+  --neutral-50: #0a0a0a;
+  --neutral-100: #171717;
+  --neutral-200: #262626;
+  --neutral-300: #404040;
+  --neutral-400: #525252;
+  --neutral-500: #737373;
+  --neutral-600: #a3a3a3;
+  --neutral-700: #d4d4d4;
+  --neutral-800: #e5e5e5;
+  --neutral-900: #fafafa;
+
+  // Accent - Keep gold but slightly brighter for dark bg
+  --accent-300: #BFFF36;
+  --accent-400: #BFFF36;
+  --accent-500: #BFFF36;
+  --accent-600: #BFFF36;
+  --accent-700: #BFFF36;
+
+  // Semantic backgrounds
+  --bg-body: #0a0a0a;
+  --bg-surface: #111111;
+  --bg-surface-secondary: #161616;
+  --bg-surface-elevated: #1c1c1c;
+  --bg-card: #161616;
+  --bg-card-hover: #1c1c1c;
+  --bg-header: rgba(17, 17, 17, 0.9);
+
+  // Text
+  --c-text: #fafafa;
+  --text-primary: #fafafa;
+  --text-secondary: #a3a3a3;
+  --text-tertiary: #737373;
+  --text-muted: #525252;
+  --text-inverse: #0a0a0a;
+  --text-accent: var(--accent-500);
+
+  // Borders
+  --border-default: #262626;
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-emphasis: #404040;
+
+  // Shadows - deeper for dark mode
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.35), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-card-hover: 0 4px 12px rgba(0, 0, 0, 0.5);
+
+  // Skeleton for dark mode
+  --skeleton-background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0) 50%);
+  --skeleton-background-gray: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.03) 25%, rgba(255, 255, 255, 0) 50%);
+
+  // Legacy colors remapped for dark theme
+  --euler-dark-100: 0 0% 4%;
+  --euler-dark-200: 0 0% 5%;
+  --euler-dark-300: 0 0% 4%;
+  --euler-dark-400: 0 0% 9%;
+  --euler-dark-500: 0 0% 7%;
+  --euler-dark-600: 0 0% 12%;
+  --euler-dark-700: 0 0% 32%;
+  --euler-dark-800: 0 0% 50%;
+  --euler-dark-900: 0 0% 70%;
+  --euler-dark-1000: 0 0% 98%;
+}

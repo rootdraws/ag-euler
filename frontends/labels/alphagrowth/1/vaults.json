@@ -1,0 +1,27 @@
+{
+	"0xadF7aFDAdaA4cBb0aDAf47C7fD7a9789C0128C6b": {
+		"name": "REF Vault — vbUSDC",
+		"description": "Collateral-only vault for vbUSDC (Reference Asset). Oracle prices based on Cork pool exercise value: min(NAV, swapRate × sUSDe/USD × (1 - fee) × hPool).",
+		"entity": "cork"
+	},
+	"0xd0f8aC1782d5B80f722bd6aCA4dEf8571A9ddA4c": {
+		"name": "cST Vault — vbUSDC4cST",
+		"description": "Collateral-only vault for cST (Cork Swap Token). Oracle value = 0. Required paired with vbUSDC for the Cork exercise path during liquidation.",
+		"entity": "cork"
+	},
+	"0x53FDab35Fd3aA26577bAc29f098084fCBAbE502f": {
+		"name": "Borrow Vault — sUSDe",
+		"description": "Borrowable sUSDe. Deposit vbUSDC + cST as matched collateral to borrow and achieve leveraged yield exposure.",
+		"entity": "alphagrowth"
+	},
+	"0xbD858DCee56Df1F0CBa44e6F5a469FbfeC0246cd": {
+		"name": "ARM-WETH-stETH Collateral",
+		"description": "Origin stETH ARM LP token collateral vault",
+		"entity": "origin"
+	},
+	"0x2ff5F1Ca35f5100226ac58E1BFE5aac56919443B": {
+		"name": "WETH Lending",
+		"description": "WETH lending vault for Origin ARM market",
+		"entity": "origin"
+	}
+}

@@ -1,0 +1,88 @@
+import type { EulerLabelEntity } from '~/entities/euler/labels'
+import type { AnyVault } from '~/composables/useVaultRegistry'
+
+// -- Market Grouping (Hybrid Algorithm) --
+
+export interface MarketGroup {
+  /** Product name or generated hash for orphan groups */
+  id: string
+  /** Human-readable name: "RE7 ETH Market" or "Ungrouped #1" */
+  name: string
+  /** How the group was derived */
+  source: 'product' | 'algorithmic'
+  /** Curator entity (null for algorithmic groups) */
+  curator?: EulerLabelEntity
+  /** Curator entity key from labels */
+  curatorKey?: string
+  /** Core member vaults */
+  vaults: AnyVault[]
+  /** Vaults referenced as collateral but not in this group */
+  externalCollateral: AnyVault[]
+  metrics: MarketGroupMetrics
+}
+
+export interface MarketGroupMetrics {
+  /** Sum of priced vault TVLs in USD (skips unpriced vaults) */
+  totalTVL: number
+  /** Whether all vaults in the group have USD pricing */
+  allVaultsPriced: boolean
+  /** How many vaults have USD pricing */
+  pricedVaultCount: number
+  /** Sum of (supply - borrow) in USD for borrowable vaults */
+  totalAvailableLiquidity: number
+  /** Sum of borrowed amounts in USD for borrowable vaults */
+  totalBorrowed: number
+  /** Best supply APY across all vaults (raw bigint from IRM, 25 decimals) */
+  bestSupplyAPY: bigint
+  /** Best (lowest) borrow APY across borrowable vaults */
+  bestBorrowAPY: bigint
+  /** Total number of vaults */
+  vaultCount: number
+  /** Vaults with utilization (non-escrow) */
+  borrowableVaultCount: number
+  /** Average utilization of borrowable vaults (0-100) */
+  averageUtilization: number
+  /** Unique asset symbols in this market */
+  assetSymbols: string[]
+  /** Whether the group contains any featured vaults */
+  hasFeatured: boolean
+}
+
+// -- Curator Grouping (for Heatmap/Treemap views) --
+
+export interface CuratorGroup {
+  key: string
+  name: string
+  logo?: string
+  markets: MarketGroup[]
+  /** Sum of all market TVLs (skips unpriced vaults) */
+  totalTVL: number
+  /** Whether all markets have full pricing */
+  allVaultsPriced: boolean
+  pricedMarketCount: number
+  vaultCount: number
+}
+
+// -- Mini Diagram Types (for market structure visualization) --
+
+export interface MiniNode {
+  address: string
+  assetAddress: string
+  assetSymbol: string
+  x: number
+  y: number
+}
+
+export interface MiniEdge {
+  from: MiniNode
+  to: MiniNode
+  mutual: boolean
+}
+
+export interface MiniDiagramData {
+  nodes: MiniNode[]
+  edges: MiniEdge[]
+  pairCount: number
+  assetCount: number
+  viewWidth: number
+}

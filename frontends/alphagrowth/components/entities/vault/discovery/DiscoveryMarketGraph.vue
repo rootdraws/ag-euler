@@ -1,0 +1,205 @@
+<script setup lang="ts">
+import type { MarketGroup, MiniDiagramData } from '~/entities/lend-discovery'
+import { getAssetLogoUrl } from '~/composables/useTokens'
+import { isVaultDeprecated } from '~/utils/eulerLabelsUtils'
+import { stringToColor } from '~/utils/string-utils'
+import {
+  getEnlargedDiagram,
+  getArrow,
+  getLabelPosition,
+  getGraphConnectedAddresses,
+  isNodeRampingDown,
+  isExternalCollateral,
+} from '~/utils/discoveryCalculations'
+
+const props = defineProps<{
+  market: MarketGroup
+  diagram: MiniDiagramData
+  selectedNodeAddress: string | null
+}>()
+
+defineEmits<{
+  selectNode: [address: string]
+}>()
+
+const isGraphNodeHighlighted = (address: string): boolean => {
+  if (!props.selectedNodeAddress) return true
+  return address === props.selectedNodeAddress || getGraphConnectedAddresses(props.diagram, props.selectedNodeAddress).has(address)
+}
+
+const isGraphEdgeHighlighted = (fromAddr: string, toAddr: string): boolean => {
+  if (!props.selectedNodeAddress) return true
+  return fromAddr === props.selectedNodeAddress || toAddr === props.selectedNodeAddress
+}
+</script>
+
+<template>
+  <template
+    v-for="(enlarged, enlargedIdx) in [getEnlargedDiagram(diagram)]"
+    :key="'edata-' + enlargedIdx"
+  >
+    <div class="px-16 pb-12 flex items-center justify-center">
+      <svg
+        class="h-auto max-w-full"
+        :style="{ width: `${Math.min(enlarged.viewWidth * 1.5, 900)}px` }"
+        :viewBox="`0 0 ${enlarged.viewWidth} ${enlarged.viewHeight}`"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <!-- Edges -->
+        <template
+          v-for="(edge, idx) in enlarged.edges"
+          :key="`edge-${idx}`"
+        >
+          <!-- Highlighted + selected: show directed arrows in accent color -->
+          <template v-if="selectedNodeAddress && isGraphEdgeHighlighted(edge.from.address, edge.to.address)">
+            <line
+              :x1="edge.from.x"
+              :y1="edge.from.y"
+              :x2="getArrow(edge.from.x, edge.from.y, edge.to.x, edge.to.y, enlarged.nodeRadius).lineX2"
+              :y2="getArrow(edge.from.x, edge.from.y, edge.to.x, edge.to.y, enlarged.nodeRadius).lineY2"
+              style="stroke: var(--accent-500)"
+              :stroke-width="0.8"
+              stroke-linecap="round"
+              opacity="0.9"
+            />
+            <polygon
+              :points="getArrow(edge.from.x, edge.from.y, edge.to.x, edge.to.y, enlarged.nodeRadius).triangle"
+              style="fill: var(--accent-500)"
+              opacity="0.9"
+            />
+            <template v-if="edge.mutual">
+              <line
+                :x1="edge.to.x"
+                :y1="edge.to.y"
+                :x2="getArrow(edge.to.x, edge.to.y, edge.from.x, edge.from.y, enlarged.nodeRadius).lineX2"
+                :y2="getArrow(edge.to.x, edge.to.y, edge.from.x, edge.from.y, enlarged.nodeRadius).lineY2"
+                style="stroke: var(--accent-500)"
+                :stroke-width="0.8"
+                stroke-linecap="round"
+                opacity="0.9"
+              />
+              <polygon
+                :points="getArrow(edge.to.x, edge.to.y, edge.from.x, edge.from.y, enlarged.nodeRadius).triangle"
+                style="fill: var(--accent-500)"
+                opacity="0.9"
+              />
+            </template>
+          </template>
+          <!-- Default state or dimmed -->
+          <line
+            v-else
+            :x1="edge.from.x"
+            :y1="edge.from.y"
+            :x2="edge.to.x"
+            :y2="edge.to.y"
+            :stroke="edge.mutual ? '#9ca3af' : '#6b7280'"
+            :stroke-width="edge.mutual ? 1.0 : 0.5"
+            stroke-linecap="round"
+            :opacity="selectedNodeAddress ? 0.15 : (edge.mutual ? 0.9 : 0.5)"
+            style="transition: opacity 0.2s, stroke 0.2s"
+          />
+        </template>
+
+        <!-- Nodes -->
+        <g
+          v-for="node in enlarged.nodes"
+          :key="node.address"
+          class="cursor-pointer"
+          :opacity="isGraphNodeHighlighted(node.address) ? 1 : 0.25"
+          style="transition: opacity 0.2s"
+          @click.stop="$emit('selectNode', node.address)"
+        >
+          <clipPath :id="`graph-clip-${market.id}-${node.address}`">
+            <circle
+              :cx="node.x"
+              :cy="node.y"
+              r="12"
+            />
+          </clipPath>
+          <circle
+            :cx="node.x"
+            :cy="node.y"
+            r="12"
+            :fill="getAssetLogoUrl(node.assetAddress, node.assetSymbol) ? '#1f2937' : stringToColor(node.assetSymbol)"
+            stroke="#4b5563"
+            stroke-width="1"
+          />
+          <image
+            v-if="getAssetLogoUrl(node.assetAddress, node.assetSymbol)"
+            :x="node.x - 12"
+            :y="node.y - 12"
+            width="24"
+            height="24"
+            :href="getAssetLogoUrl(node.assetAddress, node.assetSymbol)"
+            :clip-path="`url(#graph-clip-${market.id}-${node.address})`"
+          />
+          <text
+            v-else
+            :x="node.x"
+            :y="node.y + 4"
+            text-anchor="middle"
+            fill="white"
+            font-size="10"
+            font-weight="600"
+          >{{ node.assetSymbol.slice(0, 2) }}</text>
+          <!-- Deprecated badge -->
+          <g v-if="isVaultDeprecated(node.address)">
+            <circle
+              :cx="node.x + 9"
+              :cy="node.y - 9"
+              r="6"
+              style="fill: var(--warning-500)"
+            />
+            <text
+              :x="node.x + 9"
+              :y="node.y - 5.5"
+              text-anchor="middle"
+              fill="white"
+              font-size="9"
+              font-weight="700"
+            >!</text>
+          </g>
+          <!-- Ramping down badge -->
+          <g v-else-if="isNodeRampingDown(market, node.address)">
+            <circle
+              :cx="node.x + 9"
+              :cy="node.y - 9"
+              r="6"
+              style="fill: var(--warning-500)"
+            />
+            <path
+              :d="`M${node.x + 11} ${node.y - 11} l-3 3 m3 0 l-3 0 l0 -3`"
+              fill="none"
+              stroke="white"
+              stroke-width="1.2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </g>
+          <!-- Asset label -->
+          <text
+            :x="getLabelPosition(node, enlarged.cx, enlarged.cy).x"
+            :y="getLabelPosition(node, enlarged.cx, enlarged.cy).y"
+            :text-anchor="getLabelPosition(node, enlarged.cx, enlarged.cy).anchor"
+            class="fill-current"
+            :class="isExternalCollateral(market, node.address) ? 'text-content-tertiary' : 'text-content-primary'"
+            font-size="12"
+            font-weight="500"
+          >
+            {{ node.assetSymbol }}
+          </text>
+        </g>
+      </svg>
+    </div>
+
+    <!-- Graph info -->
+    <div class="flex justify-center gap-16 text-p3 text-content-tertiary pb-8">
+      <span>{{ diagram.assetCount }} assets</span>
+      <span>{{ diagram.pairCount }} pairs</span>
+    </div>
+
+    <p class="text-p4 text-content-muted text-center leading-relaxed px-16 pb-12">
+      Tap a node to highlight connections and see lending/borrowing options below.
+    </p>
+  </template>
+</template>

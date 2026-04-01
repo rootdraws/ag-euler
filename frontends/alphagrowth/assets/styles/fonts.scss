@@ -1,0 +1,47 @@
+// @import url('https://fonts.googleapis.com/css2?family=Besley:ital,wght@0,400..900;1,400..900&display=swap');
+// @import url('https://rsms.me/inter/inter.css');
+
+@font-face {
+  font-family: Inter;
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/fonts/inter/InterVariable.woff2?v=1.0') format('woff2');
+}
+@font-face {
+  font-family: Inter;
+  font-style: italic;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/fonts/inter/InterVariable-Italic.woff2?v=1.0') format('woff2');
+}
+
+@font-face {
+  font-family: Besley;
+  font-style: normal;
+  font-weight: 400 900;
+  font-display: swap;
+  src: url('/fonts/besley/Besley-Variable.woff2?v=1.0') format('woff2');
+}
+@font-face {
+  font-family: Besley;
+  font-style: italic;
+  font-weight: 400 900;
+  font-display: swap;
+  src: url('/fonts/besley/Besley-Italic-Variable.woff2?v=1.0') format('woff2');
+}
+
+:root {
+  font-family: Inter, sans-serif;
+  font-feature-settings: 'liga' 1, 'calt' 1; /* fix for Chrome */
+  font-variation-settings: "opsz" 32;
+}
+
+.besley {
+  font-family: Besley, serif;
+}
+
+@supports (font-variation-settings: normal) {
+  :root { font-family: Inter, sans-serif; }
+  .besley { font-family: Besley, serif; }
+}

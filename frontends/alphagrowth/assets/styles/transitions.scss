@@ -1,0 +1,216 @@
+// ============================================
+// APPLE-STYLE TRANSITIONS & ANIMATIONS
+// ============================================
+
+// Page transitions - smooth fade + subtle lift
+.page-enter-active {
+  transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.page-leave-active {
+  transition: opacity 0.15s cubic-bezier(0.4, 0, 1, 1);
+}
+
+.page-enter-from {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.page-leave-to {
+  opacity: 0;
+}
+
+.page-enter-to,
+.page-leave-from {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+// Instant fade (for inner components)
+.instant-fade-enter-active {
+  transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.instant-fade-leave-active {
+  transition: opacity 0s;
+}
+
+.instant-fade-enter-from,
+.instant-fade-leave-to {
+  opacity: 0;
+}
+
+// Color transition utility
+.trs-color {
+  transition: color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+// Modal - slide up with spring easing
+.modal-enter-active {
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+              opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.modal-leave-active {
+  transition: transform 0.25s cubic-bezier(0.4, 0, 1, 1),
+              opacity 0.2s cubic-bezier(0.4, 0, 1, 1);
+}
+
+.modal-enter-from {
+  transform: translateY(100%);
+  opacity: 0.5;
+}
+
+.modal-leave-to {
+  transform: translateY(100%);
+  opacity: 0;
+}
+
+// Layout transitions
+.layout-enter-active,
+.layout-leave-active {
+  transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.layout-enter-from,
+.layout-leave-to {
+  opacity: 0;
+}
+
+// Tooltip transitions
+.tooltip-enter-active {
+  transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tooltip-leave-active {
+  transition: opacity 0.15s cubic-bezier(0.4, 0, 1, 1),
+              transform 0.15s cubic-bezier(0.4, 0, 1, 1);
+}
+
+.tooltip-enter-from {
+  opacity: 0;
+  transform: scale(0.96) translateY(-4px);
+}
+
+.tooltip-leave-to {
+  opacity: 0;
+  transform: scale(0.98);
+}
+
+.tooltip-enter-to,
+.tooltip-leave-from {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+}
+
+// ============================================
+// ENTRANCE ANIMATIONS
+// ============================================
+
+// Fade in + slide up
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Fade in only
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+// Scale in (for modals/cards)
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+// Slide in from right
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+// Animation utility classes
+.animate-fade-in {
+  animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.25s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+// Stagger animation delays for lists
+.stagger-1 { animation-delay: 0.05s; }
+.stagger-2 { animation-delay: 0.1s; }
+.stagger-3 { animation-delay: 0.15s; }
+.stagger-4 { animation-delay: 0.2s; }
+.stagger-5 { animation-delay: 0.25s; }
+.stagger-6 { animation-delay: 0.3s; }
+.stagger-7 { animation-delay: 0.35s; }
+.stagger-8 { animation-delay: 0.4s; }
+
+// Start invisible for staggered items
+.stagger-item {
+  opacity: 0;
+}
+
+// ============================================
+// INTERACTIVE TRANSITIONS
+// ============================================
+
+// Smooth hover lift effect
+.hover-lift {
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px -4px rgba(0, 0, 0, 0.1);
+  }
+  
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+// Subtle press effect
+.press-effect {
+  transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  &:active {
+    transform: scale(0.98);
+  }
+}

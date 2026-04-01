@@ -1,0 +1,58 @@
+{
+	"alphagrowth": {
+		"name": "Alpha Growth",
+		"logo": "alphagrowth.svg",
+		"description": "DeFi risk curation and vault management.",
+		"url": "https://alphagrowth.io",
+		"addresses": {},
+		"social": {
+			"twitter": "",
+			"youtube": "",
+			"discord": "",
+			"telegram": "",
+			"github": ""
+		}
+	},
+	"cork": {
+		"name": "Cork Protocol",
+		"logo": "cork.svg",
+		"description": "Tokenized risk infrastructure for DeFi. Cork Swap Tokens provide depeg and duration insurance enabling atomic liquidation of illiquid collateral.",
+		"url": "https://cork.tech",
+		"addresses": {},
+		"social": {
+			"twitter": "https://x.com/caborkcork",
+			"youtube": "",
+			"discord": "",
+			"telegram": "https://t.me/caborkcork",
+			"github": ""
+		}
+	},
+	"origin": {
+		"name": "Origin Protocol",
+		"logo": "origin.png",
+		"description": "Origin builds onchain finance products including OETH and ARM liquidity management.",
+		"url": "https://www.originprotocol.com",
+		"addresses": {},
+		"social": {
+			"twitter": "",
+			"youtube": "",
+			"discord": "",
+			"telegram": "",
+			"github": ""
+		}
+	},
+	"euler": {
+		"name": "Euler Finance",
+		"logo": "euler.svg",
+		"description": "Modular lending protocol.",
+		"url": "https://euler.finance",
+		"addresses": {},
+		"social": {
+			"twitter": "eulerfinance",
+			"youtube": "EulerFinance",
+			"discord": "https://discord.euler.finance/",
+			"telegram": "eulerfinance_official",
+			"github": "euler-xyz"
+		}
+	}
+}

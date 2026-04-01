@@ -1,0 +1,24 @@
+{
+	"cork-protected-loop": {
+		"name": "Cork Protected Loop — vbUSDC/sUSDe",
+		"description": "Leveraged vbUSDC positions using Cork Swap Tokens for depeg insurance. Deposit vbUSDC + cST as collateral, borrow sUSDe. Atomic liquidation via Cork exercise path: REF + cST → sUSDe.",
+		"entity": ["alphagrowth", "cork", "euler"],
+		"url": "https://docs.cork.tech/",
+		"vaults": [
+			"0xadF7aFDAdaA4cBb0aDAf47C7fD7a9789C0128C6b",
+			"0xd0f8aC1782d5B80f722bd6aCA4dEf8571A9ddA4c",
+			"0x53FDab35Fd3aA26577bAc29f098084fCBAbE502f"
+		],
+		"featuredVaults": ["0xadF7aFDAdaA4cBb0aDAf47C7fD7a9789C0128C6b"]
+	},
+	"origin-arm-weth": {
+		"name": "Origin ARM / WETH",
+		"description": "Borrow WETH against Origin's stETH ARM LP tokens. Leveraged looping (multiply) available.",
+		"entity": ["alphagrowth", "origin", "euler"],
+		"url": "https://www.originprotocol.com",
+		"vaults": [
+			"0xbD858DCee56Df1F0CBa44e6F5a469FbfeC0246cd",
+			"0x2ff5F1Ca35f5100226ac58E1BFE5aac56919443B"
+		]
+	}
+}

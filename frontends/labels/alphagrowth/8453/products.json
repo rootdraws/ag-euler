@@ -1,0 +1,12 @@
+{
+	"frax-fx-cluster": {
+		"name": "Frax FX Markets",
+		"description": "Borrow frxUSD against BRZ collateral on Base.",
+		"entity": ["alphagrowth", "frax"],
+		"url": "https://frax.finance",
+		"vaults": [
+			"0x42BA0a943EDcc846333642d62F500894b199A798",
+			"0x92f8b6bfC276E9A38545bE6517d3295593060D00"
+		]
+	}
+}
