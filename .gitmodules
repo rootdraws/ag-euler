@@ -16,3 +16,9 @@
 [submodule "reference/euler-vault-scripts"]
 	path = reference/euler-vault-scripts
 	url = https://github.com/euler-xyz/euler-vault-scripts.git
+[submodule "frontends/alphagrowth"]
+	path = frontends/alphagrowth
+	url = https://github.com/alphagrowth/ag-euler-lite-balancer.git
+[submodule "frontends/labels/alphagrowth"]
+	path = frontends/labels/alphagrowth
+	url = https://github.com/alphagrowth/ag-euler-balancer-labels.git

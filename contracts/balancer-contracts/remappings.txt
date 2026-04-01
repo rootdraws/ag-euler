@@ -1,0 +1,4 @@
+forge-std/=lib/forge-std/src/
+euler-price-oracle/=lib/euler-price-oracle/src/
+ethereum-vault-connector/=lib/euler-price-oracle/lib/ethereum-vault-connector/src/
+@openzeppelin/contracts/=lib/euler-price-oracle/lib/openzeppelin-contracts/contracts/
