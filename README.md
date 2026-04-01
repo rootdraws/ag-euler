@@ -16,7 +16,8 @@ git clone --recurse-submodules https://github.com/rootdraws/ag-euler.git
 | Balancer | Monad (143) | [contracts/balancer-contracts/](contracts/balancer-contracts/) | **Live** |
 | Origin Protocol | Ethereum (1) | [contracts/origin-contracts/](contracts/origin-contracts/) | **Live** |
 | Frax | Base (8453) | [contracts/frax-contracts/](contracts/frax-contracts/) | Deployed — caps pending |
-| ZRO (LayerZero) | Base (8453) | [contracts/zro-contracts/](contracts/zro-contracts/) | Scripts ready — adds to existing USDC/ETH cluster |
+| Venice (VVV) | Base (8453) | [contracts/venice-contracts/](contracts/venice-contracts/) | **Live** — 3 markets (VVV/USDC/ETH) |
+| ZRO (LayerZero) | Base (8453) | [contracts/zro-contracts/](contracts/zro-contracts/) | **Deployed** — added to Venice cluster |
 
 Frontend: `euler.alphagrowth.io` — managed by Michael (AG webmaster). Source at `frontends/alphagrowth/`.
 
@@ -42,7 +43,9 @@ AG-Euler/
 │   ├── origin-contracts/       ← Origin ARM × WETH (Ethereum mainnet)
 │   │   ├── script/             ← 7 deployment scripts
 │   │   └── origin-arm-euler-spec.md
-│   └── zro-contracts/          ← ZRO × USDC/ETH cluster (Base)
+│   ├── venice-contracts/       ← Venice VVV/USDC/ETH cluster (Base)
+│   │   └── script/             ← 10 deployment scripts
+│   └── zro-contracts/          ← ZRO added to Venice cluster (Base)
 │       └── script/             ← 7 scripts (adapter, IRM, router, vault, wire, config, fee)
 ├── frontends/
 │   ├── alphagrowth/            ← Consolidated frontend (all partners, feature-flagged)
@@ -54,7 +57,7 @@ AG-Euler/
 │       ├── alphagrowth/        ← Consolidated labels (chains 1, 143, 8453)
 │       │   ├── 1/              ← Cork + Origin (Ethereum)
 │       │   ├── 143/            ← Balancer (Monad)
-│       │   └── 8453/           ← Frax (Base)
+│       │   └── 8453/           ← Frax + Venice + ZRO (Base)
 │       └── euler-submission/
 │           └── euler-labels/   ← Fork of euler-xyz/euler-labels (official listing PRs)
 ├── reference/                  ← Upstream read-only repos (submodules + clones)

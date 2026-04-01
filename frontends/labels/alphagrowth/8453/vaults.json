@@ -8,5 +8,45 @@
 		"name": "BRZ Token",
 		"description": "Collateral vault for direct BRZ (Brazilian Digital Real) token deposits. Priced via Chainlink BRZ/USD feed.",
 		"entity": "frax"
+	},
+	"0x4B6509B06f664eb8c8a4e9072655A4C6cafc1D9C": {
+		"name": "VVV Lending",
+		"description": "Lend VVV to earn yield from borrowers.",
+		"entity": "venice"
+	},
+	"0x21c8c8A56790A2b10370373fAcb94e925fD6a06E": {
+		"name": "USDC Lending",
+		"description": "Lend USDC to earn yield from VVV and ETH collateral borrowers.",
+		"entity": "alphagrowth"
+	},
+	"0x68AAD2c78065E2D28d2B46f6A80c5a813461FFf4": {
+		"name": "ETH Lending",
+		"description": "Lend ETH to earn yield from USDC and VVV collateral borrowers.",
+		"entity": "alphagrowth"
+	},
+	"0x70abc7848ce268017728aD8E45F979F6F1071403": {
+		"name": "USDC Collateral",
+		"description": "USDC collateral vault for Venice markets.",
+		"entity": "alphagrowth"
+	},
+	"0xDA8f11258CAC545F2A6f28b13aAca364E08F8599": {
+		"name": "VVV Collateral",
+		"description": "VVV collateral vault for Venice markets.",
+		"entity": "venice"
+	},
+	"0xeC0c00e9b0894553c9D63C1Dd930c27a303F953c": {
+		"name": "WETH Collateral",
+		"description": "WETH collateral vault for Venice markets.",
+		"entity": "alphagrowth"
+	},
+	"0xCB935d7916B20748e7f14C3B95931b8dcdA2472D": {
+		"name": "ZRO Lending",
+		"description": "Lend ZRO to earn yield from USDC and ETH collateral borrowers.",
+		"entity": "layerzero"
+	},
+	"0xaA73062F331873581991eDdD6848e0e57575E14f": {
+		"name": "ZRO Collateral",
+		"description": "ZRO collateral vault. Use ZRO as collateral to borrow USDC or ETH.",
+		"entity": "layerzero"
 	}
 }

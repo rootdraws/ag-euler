@@ -55,6 +55,34 @@
 			"github": ""
 		}
 	},
+	"venice": {
+		"name": "Venice AI",
+		"logo": "venice.png",
+		"description": "Decentralized AI inference platform. VVV is the Venice utility and governance token.",
+		"url": "https://venice.ai",
+		"addresses": {},
+		"social": {
+			"twitter": "VeniceAI",
+			"youtube": "",
+			"discord": "",
+			"telegram": "",
+			"github": ""
+		}
+	},
+	"layerzero": {
+		"name": "LayerZero",
+		"logo": "layerzero.png",
+		"description": "Omnichain interoperability protocol. ZRO is the LayerZero governance and utility token.",
+		"url": "https://layerzero.network",
+		"addresses": {},
+		"social": {
+			"twitter": "LayerZero_Core",
+			"youtube": "",
+			"discord": "",
+			"telegram": "",
+			"github": "LayerZero-Labs"
+		}
+	},
 	"euler": {
 		"name": "Euler Finance",
 		"logo": "euler.svg",

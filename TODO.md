@@ -316,13 +316,69 @@ Frontend live at `frax.alphagrowth.fun` — frxUSD borrowable, BRZ as collateral
 
 ---
 
+## Venice (VVV) — Base (Chain 8453)
+
+**Status: LIVE.** Three borrow vaults (VVV, USDC, ETH) deployed on Base with cross-collateral support. All vaults activated, oracles verified, labels pushed, frontend tested locally.
+
+**Contract dir:** `contracts/venice-contracts/`
+**Chain:** Base (8453)
+**Deployer:** `0x8B59fC48e305AFe0934a897F0CaC6CbD3764F3dd`
+
+### Deployed Addresses
+
+| Contract | Address |
+|---|---|
+| KinkIRM | `0x23bBDD9B5c795626A043a52C7984e6F3EE47BBDf` |
+| VVV/USD ChainlinkOracle Adapter | `0x52cACC037E8F6f681718E08BafaEe305FB1e5512` |
+| EulerRouter | `0x0293B19af06dF6CB00323e1e924AA8995bC1718B` |
+| VVV Borrow Vault | `0x4B6509B06f664eb8c8a4e9072655A4C6cafc1D9C` |
+| USDC Borrow Vault | `0x21c8c8A56790A2b10370373fAcb94e925fD6a06E` |
+| ETH Borrow Vault | `0x68AAD2c78065E2D28d2B46f6A80c5a813461FFf4` |
+| USDC Collateral Vault | `0x70abc7848ce268017728aD8E45F979F6F1071403` |
+| VVV Collateral Vault | `0xDA8f11258CAC545F2A6f28b13aAca364E08F8599` |
+| WETH Collateral Vault | `0xeC0c00e9b0894553c9D63C1Dd930c27a303F953c` |
+
+### Market Parameters
+
+| | Market 1: Borrow VVV | Market 2: Borrow USDC | Market 3: Borrow ETH |
+|---|---|---|---|
+| Collateral | USDC, WETH | VVV, WETH | USDC, VVV |
+| Borrow LTV | 80% | 80% | 80% |
+| Liquidation LTV | 85% | 85% | 85% |
+| Max Liq Discount | 5% | 5% | 5% |
+| Interest Fee | 10% | 10% | 10% |
+| Supply Cap | 200,000 VVV | 1,500,000 USDC | 800 WETH |
+| Borrow Cap | 200,000 VVV | 1,500,000 USDC | 800 WETH |
+
+IRM (shared): Base=1%, Kink(80%)=40%, Max=100% APY. Fee receiver: `0x4f894Bfc9481110278C356adE1473eBe2127Fd3C`.
+
+### What's Working
+
+- [x] All contracts deployed (10 scripts: IRM, Chainlink adapter, router, 3 borrow vaults, 3 collateral vaults, wire oracle, configure cluster, fee receiver)
+- [x] VVV/USD ChainlinkOracle adapter deployed and verified on BaseScan
+- [x] EulerRouter deployed and verified on BaseScan
+- [x] Oracle prices verified on-chain (VVV, USDC, ETH all match CoinGecko within 0.2%)
+- [x] Hook config cleared — all 6 vaults activated (`setHookConfig(address(0), 0)`)
+- [x] Labels pushed to `KyrilVlasenko/ag-euler-balancer-labels` (products, vaults, entities, logo)
+- [x] Frontend tested locally at localhost:3000
+
+### Remaining TODOs
+
+- [ ] **Liquidation testing** — confirm end-to-end for all collateral types
+- [ ] **Governor transfer** — transfer borrow vaults + router from deployer EOA to multisig
+- [ ] **Official Euler listing** — PR to euler-xyz/euler-labels for app.euler.finance
+- [ ] **Production frontend** — coordinate with Michael to deploy to euler.alphagrowth.io
+- [ ] **Rotate deployer credentials** — private key was exposed during deployment session
+
+---
+
 ## ZRO (LayerZero) — Base (Chain 8453)
 
-**Status: SCRIPTS READY.** Adding ZRO to an existing USDC/ETH cluster deployed by co-worker (Kyril). ZRO is both borrowable (against USDC + ETH collateral) and usable as collateral (to borrow USDC or ETH). No custom Solidity — uses Euler's `ChainlinkOracle` adapter from reference repos.
+**Status: DEPLOYED.** ZRO added to the Venice USDC/ETH cluster. ZRO is both borrowable (against USDC + ETH collateral) and usable as collateral (to borrow USDC or ETH). No custom Solidity — uses Euler's `ChainlinkOracle` adapter. Labels pushed.
 
-**Contract dir:** `contracts/zro-contracts/`
+**Contract dir:** `contracts/zro-contracts/` (scripts) + `contracts/venice-contracts/.env` (deployed addresses)
 **Chain:** Base (8453)
-**Collaborator:** KyrilVlasenko (GitHub) — deploys USDC/ETH/VVV cluster, we add ZRO to it
+**Deployer:** Same as Venice (`0x8B59fC48e305AFe0934a897F0CaC6CbD3764F3dd`)
 
 ### Market Design
 
@@ -364,28 +420,30 @@ Frontend live at `frax.alphagrowth.fun` — frxUSD borrowable, BRZ as collateral
 | Supply Cap | 185,000 ZRO | Managed by Kyril |
 | Borrow Cap | 185,000 ZRO | Managed by Kyril |
 
+### Deployed Addresses
+
+| Contract | Address |
+|---|---|
+| ZRO/USD ChainlinkOracle Adapter | `0x9D39B08C040501c0977274F865cD11891BF3c1d2` |
+| KinkIRM (ZRO) | `0xD362cf3119854BdB08A0F160B37528EfF5F0280d` |
+| ZRO Borrow Vault | `0xCB935d7916B20748e7f14C3B95931b8dcdA2472D` |
+| ZRO Collateral Vault | `0xaA73062F331873581991eDdD6848e0e57575E14f` |
+
 ### Deployment
 
-Scripts 1–4 are standalone (we run). Scripts 5–6 touch existing vaults (Kyril runs — he's governor).
-
-- [ ] **Step 1: Deploy ChainlinkOracle adapter** — ZRO/USD (25h staleness)
-- [ ] **Step 2: Deploy IRM** — ZRO curve only
-- [ ] **Step 3: Deploy EulerRouter** — for ZRO vault only
-- [ ] **Step 4: Deploy ZRO Borrow Vault** — asset=ZRO, unitOfAccount=USD
-- [ ] **Step 5: Wire oracles** — wire 3 routers (ZRO, USDC, ETH) with adapters + resolved vaults
-- [ ] **Step 6: Configure cluster** — IRM, LTV, caps on ZRO vault + add ZRO collateral to USDC/ETH vaults
-- [ ] **Step 7: Set fee receiver** — ZRO vault only
-
-### Prerequisites (from Kyril)
-
-- [ ] **USDC/ETH/VVV cluster deployed** — Kyril provides vault + router addresses for `.env`
-- [ ] **Governor access** — Kyril must run scripts 5+6 (or transfer governance)
+- [x] **Step 1: Deploy ChainlinkOracle adapter** — ZRO/USD (25h staleness)
+- [x] **Step 2: Deploy IRM** — ZRO curve only
+- [x] **Step 3: Deploy EulerRouter** — for ZRO vault only
+- [x] **Step 4: Deploy ZRO Borrow Vault** — asset=ZRO, unitOfAccount=USD
+- [x] **Step 5: Wire oracles** — wire 3 routers (ZRO, USDC, ETH) with adapters + resolved vaults
+- [x] **Step 6: Configure cluster** — IRM, LTV, caps on ZRO vault + add ZRO collateral to USDC/ETH vaults
+- [x] **Step 7: Set fee receiver** — ZRO vault only
+- [x] **Labels** — pushed to `KyrilVlasenko/ag-euler-balancer-labels` (products, vaults, entities, logo)
 
 ### Remaining TODOs
 
-- [ ] **Labels** — add ZRO vaults to `frontends/labels/alphagrowth/8453/` (products, vaults, entities)
+- [ ] **Activate markets** — call `setHookConfig(address(0), 0)` on ZRO borrow vault + ZRO collateral vault (may already be done — verify with `cast call`)
 - [ ] **Official listing** — PR to euler-xyz/euler-labels for app.euler.finance
-- [ ] **Coordinate USDC/ETH caps with Kyril** — his caps are shared across all collateral types
 - [ ] **Liquidation testing** — confirm end-to-end for ZRO-collateralized positions
 - [ ] **Governor transfer** — transfer ZRO vault + router from deployer EOA to multisig
 

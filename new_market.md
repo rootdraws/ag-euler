@@ -423,6 +423,30 @@ source .env && forge script script/07_SetFeeReceiver.s.sol \
   --rpc-url $RPC_URL_<CHAIN> --private-key $PRIVATE_KEY --broadcast
 ```
 
+### Step 8: Activate Markets (Enable Vault Operations)
+
+**CRITICAL — without this step, all vault operations (deposit, withdraw, borrow, repay, liquidate) will fail with "Operation Disabled".**
+
+Euler V2 factory proxies are created with `hookedOps = 32767` (all operations disabled) and `hookTarget = address(0)`. This acts as a kill switch — when hookedOps bits are set but there is no hook contract, those operations are blocked. You must clear the hookedOps bitmask on **every** vault (both borrow and collateral) by calling `setHookConfig(address(0), 0)`.
+
+**Verify a vault needs activation:**
+```bash
+cast call <VAULT_ADDRESS> "hookConfig()(address,uint32)" --rpc-url $RPC_URL_<CHAIN>
+# Second value = 32767 → operations DISABLED, needs activation
+# Second value = 0     → operations ENABLED, good to go
+```
+
+**Activate a single vault:**
+```bash
+cast send <VAULT_ADDRESS> "setHookConfig(address,uint32)" \
+  0x0000000000000000000000000000000000000000 0 \
+  --rpc-url $RPC_URL_<CHAIN> --private-key $PRIVATE_KEY
+```
+
+**You must run this for every vault you deployed** — borrow vaults AND collateral vaults. For example, a 2-market deployment with 2 borrow vaults and 2 collateral vaults requires 4 activation transactions.
+
+This can also be added as an additional deployment script (e.g. `08_ActivateMarkets.s.sol`) or run manually via `cast send` after all other steps are complete.
+
 ---
 
 ## Phase 3: Labels
@@ -616,6 +640,7 @@ intrinsicApySources: [
 
 ### Verification
 
+- [ ] **Markets activated** — `setHookConfig(address(0), 0)` called on ALL vaults (borrow + collateral). Verify: `cast call <vault> "hookConfig()(address,uint32)"` returns `0` for the second value.
 - [ ] Vaults appear in frontend (check `products.json` is fetched correctly)
 - [ ] Entity logos render (check `entities.json` + `logo/` directory)
 - [ ] Vault names and descriptions display correctly (`vaults.json`)
