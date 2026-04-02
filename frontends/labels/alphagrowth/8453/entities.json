@@ -57,7 +57,7 @@
 	},
 	"venice": {
 		"name": "Venice AI",
-		"logo": "venice.png",
+		"logo": "venice-ai.png",
 		"description": "Decentralized AI inference platform. VVV is the Venice utility and governance token.",
 		"url": "https://venice.ai",
 		"addresses": {},
