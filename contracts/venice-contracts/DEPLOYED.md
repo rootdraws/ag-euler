@@ -30,3 +30,12 @@ Deployed 2025-04-01.
 | ZRO KinkIRM | `0xD362cf3119854BdB08A0F160B37528EfF5F0280d` |
 | ZRO Borrow Vault | `0xCB935d7916B20748e7f14C3B95931b8dcdA2472D` |
 | ZRO Collateral Vault | `0xaA73062F331873581991eDdD6848e0e57575E14f` |
+
+## AERO Extension (see `contracts/aero-contracts/`)
+
+| Contract | Address |
+|----------|---------|
+| AERO/USD Chainlink Adapter | `0x3E5221be796DDb59183193Da9a01f38449b0f7Be` |
+| AERO KinkIRM | `0x78F615b0C47099eF9B1D3ad5087f24c26074b325` |
+| AERO Borrow Vault | `0xAf5F576396730C212A8C6056A00eaA58123d78B6` |
+| AERO Collateral Vault | `0x2172Df80c6ba09F2a314318C4c1D385F67582a1c` |

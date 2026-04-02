@@ -1,20 +1,23 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 
 export default defineNuxtConfig({
-  modules: ['@nuxtjs/tailwindcss', '@nuxt/eslint', '@gvade/nuxt3-svg-sprite', '@vueuse/nuxt'],
+  modules: [
+    "@nuxtjs/tailwindcss",
+    "@nuxt/eslint",
+    "@gvade/nuxt3-svg-sprite",
+    "@vueuse/nuxt",
+  ],
   ssr: false,
 
   components: [
     {
-      path: '~/components',
+      path: "~/components",
       pathPrefix: false,
     },
   ],
 
   imports: {
-    dirs: [
-      'composables/*/index.{ts,js,mjs,mts}',
-    ],
+    dirs: ["composables/*/index.{ts,js,mjs,mts}"],
   },
   devtools: {
     enabled: true,
@@ -26,106 +29,106 @@ export default defineNuxtConfig({
 
   app: {
     head: {
-      title: 'AlphaGrowth Vaults',
+      title: "AlphaGrowth Vaults",
       htmlAttrs: {
-        lang: 'en',
+        lang: "en",
       },
       meta: [
         {
-          name: 'description',
-          content: 'All AlphaGrowth curated Euler vaults in one place',
+          name: "description",
+          content: "All AlphaGrowth curated Euler vaults in one place",
         },
-        { charset: 'utf-8' },
+        { charset: "utf-8" },
         {
-          name: 'viewport',
-          content: 'width=device-width, initial-scale=1, user-scalable=no',
-        },
-        {
-          property: 'og:title',
-          content: 'AlphaGrowth Vaults',
+          name: "viewport",
+          content: "width=device-width, initial-scale=1, user-scalable=no",
         },
         {
-          property: 'og:description',
-          content: 'All AlphaGrowth curated Euler vaults in one place',
+          property: "og:title",
+          content: "AlphaGrowth Vaults",
         },
         {
-          property: 'og:type',
-          content: 'website',
+          property: "og:description",
+          content: "All AlphaGrowth curated Euler vaults in one place",
         },
         {
-          name: 'twitter:card',
-          content: 'summary',
+          property: "og:type",
+          content: "website",
         },
         {
-          name: 'twitter:title',
-          content: 'AlphaGrowth Vaults',
+          name: "twitter:card",
+          content: "summary",
         },
         {
-          name: 'twitter:description',
-          content: 'All AlphaGrowth curated Euler vaults in one place',
+          name: "twitter:title",
+          content: "AlphaGrowth Vaults",
         },
         {
-          name: 'theme-color',
-          content: '#efeef4',
+          name: "twitter:description",
+          content: "All AlphaGrowth curated Euler vaults in one place",
+        },
+        {
+          name: "theme-color",
+          content: "#efeef4",
         },
       ],
       link: [
         {
-          rel: 'preconnect',
-          href: 'https://fonts.reown.com',
-          crossorigin: 'anonymous',
+          rel: "preconnect",
+          href: "https://fonts.reown.com",
+          crossorigin: "anonymous",
         },
         {
-          rel: 'icon',
-          href: '/favicons/favicon.ico',
+          rel: "icon",
+          href: "/favicons/favicon.ico",
         },
         {
-          rel: 'shortcut icon',
-          href: '/favicons/favicon.ico',
+          rel: "shortcut icon",
+          href: "/favicons/favicon.ico",
         },
       ],
     },
   },
 
-  css: ['~/assets/styles/main.scss'],
+  css: ["~/assets/styles/main.scss"],
 
   runtimeConfig: {
     public: {
       // CONFIG_ vars (Doppler: NUXT_PUBLIC_CONFIG_*)
-      configDocsUrl: '',
-      configTosUrl: '',
-      configTosMdUrl: '',
-      configXUrl: '',
-      configDiscordUrl: '',
-      configTelegramUrl: '',
-      configGithubUrl: '',
-      configAppTitle: 'AlphaGrowth Vaults',
-      configAppDescription: 'All AlphaGrowth curated Euler vaults in one place',
-      configLabelsRepo: 'euler-xyz/euler-labels',
-      configLabelsRepoBranch: 'master',
-      configOracleChecksRepo: 'euler-xyz/oracle-checks',
+      configDocsUrl: "",
+      configTosUrl: "",
+      configTosMdUrl: "",
+      configXUrl: "",
+      configDiscordUrl: "",
+      configTelegramUrl: "",
+      configGithubUrl: "",
+      configAppTitle: "AlphaGrowth Vaults",
+      configAppDescription: "All AlphaGrowth curated Euler vaults in one place",
+      configLabelsRepo: "euler-xyz/euler-labels",
+      configLabelsRepoBranch: "master",
+      configOracleChecksRepo: "euler-xyz/oracle-checks",
       // Feature flags: enabled by default. Set to 'false' to disable.
-      configEnableEntityBranding: '',
-      configEnableVaultType: '',
-      configEnableEarnPage: '',
-      configEnableLendPage: '',
-      configEnableExplorePage: '',
+      configEnableEntityBranding: "",
+      configEnableVaultType: "",
+      configEnableEarnPage: "",
+      configEnableLendPage: "",
+      configEnableExplorePage: "",
       // Feature flags: disabled by default. Set to 'true' to enable.
-      configEnableSwapDeposit: '',
-      configEnableEnsoMultiply: '',
-      configEnableLoopZapPage: '',
-      configEnableCorkBorrowPage: '',
-      configBptAdapterConfig: '',
-      configArmAdapterConfig: '',
+      configEnableSwapDeposit: "",
+      configEnableEnsoMultiply: "",
+      configEnableLoopZapPage: "",
+      configEnableCorkBorrowPage: "",
+      configBptAdapterConfig: "",
+      configArmAdapterConfig: "",
       // Env config fallbacks (Doppler: NUXT_PUBLIC_*)
       // Prefer window.__APP_CONFIG__ at runtime; these are build-time fallbacks.
-      appKitProjectId: '',
-      appUrl: '',
-      pythHermesUrl: '',
-      eulerApiUrl: '',
-      swapApiUrl: '',
-      priceApiUrl: '',
-      ensoApiUrl: '',
+      appKitProjectId: "",
+      appUrl: "",
+      pythHermesUrl: "",
+      eulerApiUrl: "",
+      swapApiUrl: "",
+      priceApiUrl: "",
+      ensoApiUrl: "",
     },
   },
 
@@ -146,7 +149,7 @@ export default defineNuxtConfig({
       : {}),
   },
 
-  compatibilityDate: '2024-08-29',
+  compatibilityDate: "2024-08-29",
 
   nitro: {
     compressPublicAssets: true,
@@ -156,6 +159,6 @@ export default defineNuxtConfig({
   eslint: { config: { stylistic: true } },
 
   svgSprite: {
-    elementClass: 'icon',
+    elementClass: "icon",
   },
-})
+});
