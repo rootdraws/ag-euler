@@ -56,3 +56,6 @@ origin-labels/
 
 # --- Euler Labels Fork (standalone repo) ---
 euler-labels/
+
+# --- Local action plan file ---
+ACTION_PLAN.md
