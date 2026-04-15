@@ -9,6 +9,7 @@ AI context file for the AG-Euler monorepo. For project overview see `README.md`.
 - Origin: `contracts/origin-contracts/origin-arm-euler-spec.md`
 - Venice (VVV): `contracts/venice-contracts/` (3-market cluster: VVV/USDC/ETH on Base)
 - ZRO: `contracts/zro-contracts/` (Chainlink adapter + scripts to add ZRO to the Venice Base cluster)
+- BNB: `contracts/bnb-contracts/` (2-market cross-margin cluster: USDT/BNB on BSC)
 
 **Frontend:** Consolidated at `frontends/alphagrowth/` — a single euler-lite fork serving all partners. All custom flows (Balancer BPT Zap, Cork dual-collateral borrow, Origin ARM multiply) are feature-flagged via env vars. Michael (AG webmaster) manages production deployment at `euler.alphagrowth.io`.
 
@@ -21,7 +22,7 @@ contracts/<partner>-contracts/       ← Foundry projects (deployment scripts, c
 frontends/
   alphagrowth/                       ← Consolidated frontend (all partners, feature-flagged)
   labels/
-    alphagrowth/                     ← Consolidated labels (chains 1, 143, 8453)
+    alphagrowth/                     ← Consolidated labels (chains 1, 56, 143, 8453)
     euler-submission/euler-labels/   ← Fork of euler-xyz/euler-labels (official listing PRs)
 reference/                           ← Upstream Euler repos (EVC, EVK, price oracle, interfaces)
 ```
@@ -60,10 +61,11 @@ All partner labels live in `frontends/labels/alphagrowth/` with one chain direct
 | Chain | Partners |
 |---|---|
 | `1/` (Ethereum) | Cork (dual-collateral borrow) + Origin (ARM/WETH) |
+| `56/` (BSC) | BNB (USDT/BNB cross-margin) |
 | `143/` (Monad) | Balancer (BPT leverage) |
 | `8453/` (Base) | Frax (FX markets) + Venice (VVV/USDC/ETH cluster) + ZRO (LayerZero) |
 
-The frontend `.env` points to the GitHub repo hosting these labels via `NUXT_PUBLIC_CONFIG_LABELS_REPO`.
+The frontend `.env` points to the GitHub repo hosting these labels via `NUXT_PUBLIC_CONFIG_LABELS_REPO`. Consolidated labels are published at `rootdraws/ag-labels` (branch `main`) — that's the repo the frontend mirrors from raw.githubusercontent.com.
 
 ---
 
@@ -136,3 +138,5 @@ To list vaults on the **official** Euler dApp, submit a PR to [euler-xyz/euler-l
 4. **Custom frontend flows are in `frontends/alphagrowth/`.** Cork dual-collateral borrow, Balancer BPT adapter/Enso multiply, and Origin ARM multiply are all implemented and feature-flagged. For new custom flows, add to this codebase. Michael handles production deployment.
 5. **Adding collateral to an existing cluster** (ZRO pattern). You don't always deploy your own borrow vault for every asset. If a USDC or ETH borrow vault already exists, you can add your token as collateral by: (a) deploying a Chainlink adapter for your token, (b) deploying your own borrow vault + router, (c) wiring `govSetConfig` + `govSetResolvedVault` into **both** your new router and the existing vault's router, and (d) calling `setLTV` on both vaults. Requires governor access to the existing vaults/routers. See `contracts/zro-contracts/` for the full pattern.
 6. **Vaults must be activated after deployment.** Euler V2 factory proxies are created with `hookedOps = 32767` (all operations disabled) and `hookTarget = address(0)`. This means **all operations (deposit, withdraw, borrow, repay, liquidate) are blocked by default**. You must call `setHookConfig(address(0), 0)` on **every** vault (borrow AND collateral) after deployment. Without this, users get "Operation Disabled" errors. Verify with: `cast call <vault> "hookConfig()(address,uint32)"` — second value should be `0`. See `new_market.md` Step 8 for details.
+7. **BSC RPC reliability is bad.** For chain 56 deploys: NodeReal's public tier rate-limits aggressively (429s during receipt polling), Dwellir is an archive-pruned node (can't simulate recent state). Use `https://bsc-dataseed.bnbchain.org` (official Binance public) for `forge script`. Also: BSC's USDT is **18 decimals**, not 6 — AmountCap mantissa/exp encoding must reflect this.
+8. **Deploy-script receipts can silently drop under rate-limiting.** If forge reports "Transaction dropped from the mempool" or "Failed to send transaction", verify on-chain before re-running — the tx may have already mined. Check `cast nonce $DEPLOYER` and compare against expected tx count. For factory-created proxies, identify which of the `additionalContracts` is the user-facing proxy (734 bytes, `governorAdmin()` returns deployer) vs the internal dispatcher (~5266 bytes). Recover missing txs with direct `cast send` rather than re-running the whole script.
