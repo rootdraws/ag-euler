@@ -1,0 +1,22 @@
+{
+	"0x0070e145f606E3EF2b358c15dc6DF882EE4F06C8": {
+		"name": "USDT Lending",
+		"description": "Lend USDT to earn yield from BNB collateral borrowers.",
+		"entity": "alphagrowth"
+	},
+	"0x82e642Bb61Ec9f2ba5364A386B03cc8d59661f76": {
+		"name": "BNB Lending",
+		"description": "Lend BNB to earn yield from USDT collateral borrowers.",
+		"entity": "alphagrowth"
+	},
+	"0xe4fe8f35afe3B0a0E19992514350A2d759160600": {
+		"name": "USDT Collateral",
+		"description": "USDT collateral vault. Use USDT as collateral to borrow BNB.",
+		"entity": "alphagrowth"
+	},
+	"0xe66B415eA3814FBB58A9313e054a2a1e6d44dBd0": {
+		"name": "BNB Collateral",
+		"description": "BNB collateral vault. Use BNB as collateral to borrow USDT.",
+		"entity": "alphagrowth"
+	}
+}

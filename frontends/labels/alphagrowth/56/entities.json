@@ -1,0 +1,30 @@
+{
+	"alphagrowth": {
+		"name": "Alpha Growth",
+		"logo": "alphagrowth.svg",
+		"description": "DeFi risk curation and vault management.",
+		"url": "https://alphagrowth.io",
+		"addresses": {},
+		"social": {
+			"twitter": "",
+			"youtube": "",
+			"discord": "",
+			"telegram": "",
+			"github": ""
+		}
+	},
+	"euler": {
+		"name": "Euler Finance",
+		"logo": "euler.svg",
+		"description": "Modular lending protocol.",
+		"url": "https://euler.finance",
+		"addresses": {},
+		"social": {
+			"twitter": "eulerfinance",
+			"youtube": "EulerFinance",
+			"discord": "https://discord.euler.finance/",
+			"telegram": "eulerfinance_official",
+			"github": "euler-xyz"
+		}
+	}
+}
