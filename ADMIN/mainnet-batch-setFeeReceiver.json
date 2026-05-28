@@ -1,0 +1,92 @@
+{
+  "version": "1.0",
+  "chainId": "1",
+  "createdAt": 1746396000000,
+  "meta": {
+    "name": "AG setFeeReceiver — Mainnet mAPOLLO cluster (4)",
+    "description": "Set feeReceiver to AG Safe (0x4f894Bfc9481110278C356adE1473eBe2127Fd3C) on the 4 AG-governed alphagrowth-mapollo vaults that currently have feeReceiver=0x0. Stops 100% of the 10% interest fee from routing to Euler DAO. The 2 cross-listed Prime collaterals (eUSDC-2, eUSDT-2) are not AG-governed and not included.",
+    "txBuilderVersion": "1.17.0",
+    "createdFromSafeAddress": "0x4f894Bfc9481110278C356adE1473eBe2127Fd3C",
+    "createdFromOwnerAddress": "",
+    "checksum": "0x0000000000000000000000000000000000000000000000000000000000000000"
+  },
+  "transactions": [
+    {
+      "to": "0x2a356443FeE07703266066c6Bb1B11b82d8246AD",
+      "value": "0",
+      "data": "0xefdcd9740000000000000000000000004f894bfc9481110278c356ade1473ebe2127fd3c",
+      "contractMethod": null,
+      "contractInputsValues": null
+    },
+    {
+      "to": "0xC11d6b78D8c609A6cbf66E89DBfea06b011B0AEf",
+      "value": "0",
+      "data": "0xefdcd9740000000000000000000000004f894bfc9481110278c356ade1473ebe2127fd3c",
+      "contractMethod": null,
+      "contractInputsValues": null
+    },
+    {
+      "to": "0x49d9fd20f1d61648Fa9434a8c0C33174F5614eB8",
+      "value": "0",
+      "data": "0xefdcd9740000000000000000000000004f894bfc9481110278c356ade1473ebe2127fd3c",
+      "contractMethod": null,
+      "contractInputsValues": null
+    },
+    {
+      "to": "0xF75D18F76859764aBe4D13cA2eBaCeFF0b90b262",
+      "value": "0",
+      "data": "0xefdcd9740000000000000000000000004f894bfc9481110278c356ade1473ebe2127fd3c",
+      "contractMethod": null,
+      "contractInputsValues": null
+    },
+    {
+      "to": "0xbD858DCee56Df1F0CBa44e6F5a469FbfeC0246cd",
+      "value": "0",
+      "data": "0xefdcd9740000000000000000000000004f894bfc9481110278c356ade1473ebe2127fd3c",
+      "contractMethod": null,
+      "contractInputsValues": null
+    },
+    {
+      "to": "0x6Fe7Fa90756434645F0b0428fDff78E99Dda0FBc",
+      "value": "0",
+      "data": "0xefdcd9740000000000000000000000004f894bfc9481110278c356ade1473ebe2127fd3c",
+      "contractMethod": null,
+      "contractInputsValues": null
+    },
+    {
+      "to": "0x35d4f830543700B7280084280ae3236f178E88e3",
+      "value": "0",
+      "data": "0xefdcd9740000000000000000000000004f894bfc9481110278c356ade1473ebe2127fd3c",
+      "contractMethod": null,
+      "contractInputsValues": null
+    },
+    {
+      "to": "0x55F9bACE2C864aC0D3392Ea9fa654b605F21A3d3",
+      "value": "0",
+      "data": "0xefdcd9740000000000000000000000004f894bfc9481110278c356ade1473ebe2127fd3c",
+      "contractMethod": null,
+      "contractInputsValues": null
+    },
+    {
+      "to": "0xb7522C867B8AFae5e89638b59fb38f31B0821795",
+      "value": "0",
+      "data": "0xefdcd9740000000000000000000000004f894bfc9481110278c356ade1473ebe2127fd3c",
+      "contractMethod": null,
+      "contractInputsValues": null
+    },
+    {
+      "to": "0x69a2fAD6AC96DDa502f7d240fB4EC88f85217705",
+      "value": "0",
+      "data": "0xefdcd9740000000000000000000000004f894bfc9481110278c356ade1473ebe2127fd3c",
+      "contractMethod": null,
+      "contractInputsValues": null
+    },
+    {
+      "to": "0x97C72647be549C6079dC95235271A9a0Fe7ECc21",
+      "value": "0",
+      "data": "0xefdcd9740000000000000000000000004f894bfc9481110278c356ade1473ebe2127fd3c",
+      "contractMethod": null,
+      "contractInputsValues": null
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+ExactFillSettler_onPremiumLegFill
+├── when phase-1 forward reverts with non-empty err bytes
+│   └── it should emit PremiumHooksReverted with the bubbled err bytes and orderDigest and targetFiller
+├── when phase-1 forward reverts after settler-state writes
+│   └── it should leave paymentSettled committed as true
+├── when phase-1 forward reverts and the caller later invokes finaliseAsSettled
+│   └── it should route dstCST to the filler's destination normally
+├── when forward succeeds
+│   └── it should write paymentSettled AFTER forward returns (order-of-writes assertion)
+├── when forward catches
+│   └── it should write paymentSettled AFTER forward returns (order-of-writes assertion)
+├── when cellar premiumFiredFor is false after successful forward
+│   └── it should revert StateDivergence
+├── when cellar premiumFiredFor is true after successful forward
+│   └── it should accept and latch paymentSettled
+└── when settler writes PREMIUM_FILLER_SLOT before forward
+    └── it should expose rolloverRec.filler via tload during phase-1 forward

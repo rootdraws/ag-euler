@@ -1,0 +1,23 @@
+# macOS
+.DS_Store
+
+# Secrets / env
+.env
+.env.local
+.env.*.local
+
+# Foundry
+/cache
+/cache_forge
+/out
+/optimized-out
+/broadcast
+/coverage
+/coverage.json
+gas-report.json
+
+# Editors
+/.idea/
+
+# Node (script/tools/)
+node_modules/

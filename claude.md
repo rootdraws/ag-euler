@@ -3,13 +3,19 @@
 AI context file for the AG-Euler monorepo. For project overview see `README.md`. For task tracking see `TODO.md`. For the full deployment SOP see `new_market.md`.
 
 **Per-partner contract context:**
-- Cork: `contracts/cork-contracts/cork-claude.md`
+- Cork: `contracts/cork-contracts/cork-claude.md` *(standby)*
 - Balancer: `contracts/balancer-contracts/balancer-claude.md`
 - Frax: `contracts/frax-contracts/frax-claude.md`
 - Origin: `contracts/origin-contracts/origin-arm-euler-spec.md`
 - Venice (VVV): `contracts/venice-contracts/` (3-market cluster: VVV/USDC/ETH on Base)
 - ZRO: `contracts/zro-contracts/` (Chainlink adapter + scripts to add ZRO to the Venice Base cluster)
-- BNB: `contracts/bnb-contracts/` (2-market cross-margin cluster: USDT/BNB on BSC)
+- AERO: `contracts/aero-contracts/DEPLOYED.md` (AERO collateral added to Venice cluster, same router)
+- VIRTUAL: `contracts/virtual-contracts/DEPLOYED.md` (VIRTUAL collateral added to Venice cluster, same router)
+- BNB: `contracts/bnb-contracts/DEPLOYED.md` (2-market cross-margin cluster: USDT/BNB on BSC)
+- AG Mainnet (ETH/USDC/WBTC): `contracts/mainnet-contracts/script/Addresses.sol` (cross-margin triad extending the Origin ARM/WETH market on Ethereum — shares EulerRouter + WETH borrow vault with Origin; governance on existing three is the AG Safe, new USDC + WBTC vaults retain deployer EOA during bring-up)
+- AG VVV LP: `contracts/ag-vvv-lp-contracts/vvv-lp-claude.md` (isolated experimentation cluster: USDC borrow against agVVVWETHlp Vault7540 share on Base, canary-governed, no Safe)
+
+**Operational tooling:** `ADMIN/` — Safe batches per chain (Base, Mainnet, Linea, Unichain, Arbitrum), governance-transfer scripts, fee tracker (`ADMIN/fee-tracker/`), per-cluster analyses, and periodic summary notes. Run the fee tracker monthly across all AG-governed vaults.
 
 **Frontend:** Consolidated at `frontends/alphagrowth/` — a single euler-lite fork serving all partners. All custom flows (Balancer BPT Zap, Cork dual-collateral borrow, Origin ARM multiply) are feature-flagged via env vars. Michael (AG webmaster) manages production deployment at `euler.alphagrowth.io`.
 
@@ -60,10 +66,10 @@ All partner labels live in `frontends/labels/alphagrowth/` with one chain direct
 
 | Chain | Partners |
 |---|---|
-| `1/` (Ethereum) | Cork (dual-collateral borrow) + Origin (ARM/WETH) |
+| `1/` (Ethereum) | Cork (dual-collateral borrow, standby) + Origin (ARM/WETH) + AG Mainnet triad (ETH/USDC/WBTC) |
 | `56/` (BSC) | BNB (USDT/BNB cross-margin) |
 | `143/` (Monad) | Balancer (BPT leverage) |
-| `8453/` (Base) | Frax (FX markets) + Venice (VVV/USDC/ETH cluster) + ZRO (LayerZero) |
+| `8453/` (Base) | Frax (FX markets) + Venice cluster (VVV/USDC/ETH) + ZRO + AERO + VIRTUAL |
 
 The frontend `.env` points to the GitHub repo hosting these labels via `NUXT_PUBLIC_CONFIG_LABELS_REPO`. Consolidated labels are published at `rootdraws/ag-labels` (branch `main`) — that's the repo the frontend mirrors from raw.githubusercontent.com.
 
@@ -108,7 +114,7 @@ Gated by `NUXT_PUBLIC_CONFIG_ENABLE_CORK_BORROW_PAGE` env var.
 
 ### Tenderly Fork Chain Support
 
-Cork is currently deployed on a Tenderly fork (chain 9991). The frontend maps fork chain IDs to their parent chain via `entities/forkChainMap.ts`, so labels, subgraphs, and Euler config resolve to mainnet data while the wallet operates on the fork.
+Cork is deployed on Ethereum mainnet (currently in standby — see TODO). The frontend retains a Tenderly fork chain mapping at `entities/forkChainMap.ts` (used during the Cork bring-up on chain 9991 for liquidator testing): fork chain IDs resolve to their parent chain so labels, subgraphs, and Euler config use mainnet data while the wallet operates on the fork. Useful for any future fork-based testing.
 
 ---
 

@@ -1,0 +1,69 @@
+name: Unit Test
+
+on:
+  pull_request:
+    types:
+      - synchronize
+      - opened
+      - edited
+      - reopened
+
+  push:
+    branches:
+      - main
+
+jobs:
+  forge-test:
+    runs-on: ubuntu-latest
+    name: Forge Unit Test
+    permissions:
+      contents: read
+    steps:
+      # Step 1: Mint a token that can read the private cellar-private submodule.
+      # Requires a GitHub App installed on both this repo and Cork-Technology/cellar-private
+      # with Contents: Read permission. Secrets: SUBMODULE_APP_ID, SUBMODULE_APP_PRIVATE_KEY.
+      - name: Generate submodule access token
+        id: submodule-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.SUBMODULE_APP_ID }}
+          private-key: ${{ secrets.SUBMODULE_APP_PRIVATE_KEY }}
+          owner: Cork-Technology
+          repositories: |
+            rollover-phoenix-private
+            cellar-private
+
+      # Step 2: Checkout the repository with submodules
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          token: ${{ steps.submodule-token.outputs.token }}
+
+      # Step 3: Install Foundry
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+
+      # Step 4: Enforce formatting check
+      - name: Check Solidity Formatting
+        run: |
+          forge fmt --check || (echo "Formatting issues detected! Please run 'forge fmt' locally to fix them." && exit 1)
+
+      # Step 5: Run unit tests
+      - name: Run Tests
+        run: forge test -vvv
+
+      # Step 6: Run EVC adapter invariants under the CI fuzz profile.
+      # The default invariant profile (32 runs x 15 depth) runs in Step 5 as part
+      # of `forge test`. This step re-runs only the EVC adapter invariant suite
+      # under FOUNDRY_PROFILE=ci (5000 runs x 50 depth per foundry.toml) to give
+      # deeper coverage of INV-F1..F8. It is scoped to the invariant path so the
+      # runtime stays bounded (~3 min) and runs AFTER the default `forge test`
+      # so dev-loop failures surface first.
+      - name: Run EVC Adapter Invariants (CI profile)
+        env:
+          FOUNDRY_PROFILE: ci
+        run: forge test --match-path "test/filler/evc/invariant/*" -vvv
+
+      # Step 7: Run snapshot tests (if applicable)
+      - name: Run Snapshot
+        run: forge snapshot

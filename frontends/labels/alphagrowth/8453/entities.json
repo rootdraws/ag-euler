@@ -69,6 +69,20 @@
 			"github": ""
 		}
 	},
+	"aerodrome": {
+		"name": "Aerodrome Finance",
+		"logo": "aerodrome.png",
+		"description": "Base-native ve(3,3) DEX with concentrated liquidity and AERO emissions on staked LP positions.",
+		"url": "https://aerodrome.finance",
+		"addresses": {},
+		"social": {
+			"twitter": "AerodromeFi",
+			"youtube": "",
+			"discord": "https://discord.gg/aerodrome",
+			"telegram": "",
+			"github": "aerodrome-finance"
+		}
+	},
 	"layerzero": {
 		"name": "LayerZero",
 		"logo": "layerzero.png",

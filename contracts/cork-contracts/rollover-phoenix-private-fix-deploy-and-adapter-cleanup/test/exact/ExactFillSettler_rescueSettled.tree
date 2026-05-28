@@ -1,0 +1,15 @@
+ExactFillSettler_rescueSettled
+├── when fallbackDestination is zero address
+│   └── it should revert InvalidDestination
+├── when sig is invalid bytes
+│   └── it should revert InvalidRescueSignature
+├── when sig recovers to a non-filler address
+│   └── it should revert InvalidRescueSignature
+├── when rescueable slot is zero
+│   └── it should revert NothingToRescue
+├── when all checks pass
+│   ├── it should transfer the rescueable amount to fallbackDestination
+│   ├── it should zero the rescueable slot
+│   └── it should emit FillerRescueWithdrawn
+└── when called twice with the same signature
+    └── it should revert NothingToRescue on the second call

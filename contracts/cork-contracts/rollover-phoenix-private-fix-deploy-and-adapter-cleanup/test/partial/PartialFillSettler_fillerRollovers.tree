@@ -1,0 +1,7 @@
+PartialFillSettler_fillerRollovers
+├── when (orderDigest, filler) has never been filled
+│   └── it should return the zero-value FillerRollover struct
+├── when (orderDigest, filler) has been filled
+│   └── it should return the populated FillerRollover with the recorded fields
+└── when (orderDigest, filler) has been finalised or refunded
+    └── it should return the populated FillerRollover with the terminal flag set

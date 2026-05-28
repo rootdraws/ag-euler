@@ -1,0 +1,77 @@
+ExactRolloverFiller_execute
+├── when destination is the zero address
+│   └── it should revert with RolloverFiller ZeroDestination
+├── when srcCstAmount is zero so the settler pulls zero which reverts at the rollover leg
+│   └── it should revert with SafeERC20 SafeERC20FailedOperation at the settler srcCST pull
+├── when caller has not approved the filler to pull srcCST
+│   └── it should revert with SafeERC20 SafeERC20FailedOperation at the filler safeTransferFrom
+├── when caller has approved the filler but caller srcCST balance is less than srcCstAmount
+│   └── it should revert with SafeERC20 SafeERC20FailedOperation at the filler safeTransferFrom insufficient balance
+├── when the srcCST token implementation reverts on transferFrom for its own reasons
+│   └── it should bubble the token side revert unchanged
+├── when SETTLER openFor reverts with InvalidSignature
+│   └── it should bubble InvalidSignature and hold zero state on the filler
+├── when SETTLER openFor reverts with NotMaker for non gasless flow
+│   └── it should bubble NotMaker
+├── when SETTLER openFor reverts with InconsistentIntent because allowPartialFills is true
+│   └── it should bubble InconsistentIntent
+├── when SETTLER openFor reverts with InvalidOrderTokenPair because srcCstToken equals premiumToken
+│   └── it should bubble InvalidOrderTokenPair
+├── when the order is already Opened by a prior openFor call
+│   └── it should treat the openFor as a no op idempotent success and proceed into the rollover leg
+├── when SETTLER fill rollover leg reverts with FillAfterDeadline
+│   └── it should bubble FillAfterDeadline and end the transaction with srcCST approval equal to zero
+├── when SETTLER fill rollover leg reverts with AlreadyFilled because the rollover output was already filled
+│   └── it should bubble AlreadyFilled and end with srcCST approval equal to zero
+├── when SETTLER fill rollover leg reverts with PartialFillNotAllowed because output amount is not equal to orderSize
+│   └── it should bubble PartialFillNotAllowed
+├── when SETTLER fill rollover leg reverts with IntentNotBoundToOrder because orderData cellarIntentHash is stale
+│   └── it should bubble IntentNotBoundToOrder
+├── when SETTLER fill rollover leg reverts with DisproportionateOutput
+│   └── it should bubble DisproportionateOutput
+├── when SETTLER fill rollover leg reverts with OrderInTerminalState
+│   └── it should bubble OrderInTerminalState
+├── when SETTLER fill rollover leg succeeds
+│   ├── it should forward srcCstAmount worth of srcCST allowance to the settler before the call
+│   ├── it should observe a FillRecord for the rollover outputHash on the settler
+│   ├── it should observe escrowed dstCST on the settler equal to dstCstProduced
+│   └── it should reset srcCST allowance from the filler to the settler to zero before the premium leg
+├── when SETTLER fill premium leg reverts with PremiumBeforeRollover in a contrived path
+│   └── it should bubble PremiumBeforeRollover
+├── when SETTLER fill premium leg reverts with AlreadyFilled because the premium output was already filled
+│   └── it should bubble AlreadyFilled
+├── when SETTLER fill premium leg reverts with InsufficientBalance because debitFrom ERC 6909 balance is short
+│   └── it should bubble InsufficientBalance and leave ERC 6909 state unchanged
+├── when SETTLER fill premium leg reverts with UnauthorizedSettler because debitFrom has not set the settler as operator
+│   └── it should bubble UnauthorizedSettler
+├── when SETTLER fill premium leg reverts with UnauthorizedPremiumFiller because debitFrom has not authorized the filler contract
+│   └── it should bubble UnauthorizedPremiumFiller
+├── when SETTLER fill premium leg succeeds
+│   ├── it should debit exactly requiredPremium from debitFrom ERC 6909 balance
+│   ├── it should transfer requiredPremium premium tokens to the UW cellar
+│   ├── it should flip paymentSettled to true on the settler
+│   └── it should not leave any residual srcCST allowance on the settler
+├── when the premium hook inside the cellar reverts during the premium leg
+│   └── it should complete execute; the AS-10 try/catch on _onPremiumLegFill commits paymentSettled / premiumSettled and emits PremiumHooksReverted (closes #58)
+├── when SETTLER finaliseAsSettled reverts with InvalidOrderStatus
+│   └── it should bubble InvalidOrderStatus
+├── when SETTLER finaliseAsSettled reverts with PaymentNotSettled
+│   └── it should bubble PaymentNotSettled
+├── when the full execute happy path completes without underfill
+│   ├── it should leave the filler contract holding zero srcCST INV F1
+│   ├── it should leave the filler contract holding zero dstCST INV F1
+│   ├── it should leave the filler contract holding zero ERC 6909 balance for premiumToken INV F4
+│   ├── it should leave zero srcCST allowance from the filler to the settler INV F2
+│   ├── it should transfer dstCstProduced dstCST to destination
+│   ├── it should return zero srcCST to the caller because the order filled exactly
+│   └── it should emit zero events whose emitter is the filler contract INV F8
+├── when the full execute happy path completes with an underfill returning leftover srcCST
+│   ├── it should transfer dstCstProduced dstCST to destination
+│   └── it should transfer srcCstAmount minus actualRolled srcCST back to the caller INV F3
+├── when destination is a contract whose onERC20Transfer callback reenters execute
+│   └── it should revert with ReentrancyGuardReentrantCall
+└── when debitFrom is a third party that authorized the settler and the filler contract via ERC 6909 setOperator
+    └── it should complete happy path with premium debited from debitFrom and paymentSettled flipped true
+
+├── when reading the EXPECTED_THREAT_MODEL constant
+│   └── it should return shared-singleton per RFC 003 section 7.2

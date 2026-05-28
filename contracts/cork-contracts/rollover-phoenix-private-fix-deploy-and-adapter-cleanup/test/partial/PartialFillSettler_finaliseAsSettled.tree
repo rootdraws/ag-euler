@@ -1,0 +1,28 @@
+PartialFillSettler_finaliseAsSettled
+├── when fillers[] is empty
+│   └── it should revert with InvalidFillers (Pashov A1; previously a no-op — PR #65)
+├── when participantCount is zero (no fillers have ever landed)
+│   └── it should not transition the order to Refunded via the shared terminal predicate (Pashov A1 early-return)
+├── when for a given filler f.premiumSettled is false
+│   └── it should skip (continue)
+├── when for a given filler f.finalised is already true
+│   └── it should skip idempotently
+├── when for a given filler f.refunded is true
+│   └── it should skip (exclusive paths)
+├── for each eligible filler
+│   ├── it should set f.finalised to true BEFORE any external call and increment finalisedCount
+│   └── it should decrement totalDstCstEscrowed, dstCST.safeTransfer f.dstCstProduced to f.destination, and emit FillerFinalised
+├── when the terminal condition holds (hookNonces phase-0 set AND totalDstCstEscrowed == 0 AND finalisedCount == participantCount)
+│   └── it should transition orderStatus from Opened to Settled and emit OrderFinalised with status Settled
+├── when dstCST.safeTransfer reverts for one filler
+│   └── it should credit rescueable[orderDigest][filler] the amount, set f.finalised true, and emit FillerRescueCredited (blacklist-safe — closes #39)
+├── when dstCST.safeTransfer reverts for one of three fillers
+│   └── it should pay the other two and credit rescueable only for the reverting filler (batch continues)
+├── when a reentrant call targets the same fillers[] slice
+│   └── it should observe f.finalised true and skip (nonReentrant still guards)
+├── when fillers[] contains a duplicate filler address
+│   └── it should skip the second occurrence idempotently
+├── when a filler slot is eligible for payout
+│   └── it should emit OrderAttribution with fillerSlot == premiumFiller == cellarFiller on the happy path (Task 36 / #47)
+└── when the payout loop completes
+    └── it should assert the settler's dstCST balance >= remaining totalDstCstEscrowed else revert BalanceFloorViolated (Task 37 / #46)

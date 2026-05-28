@@ -1,0 +1,50 @@
+{
+  "version": "1.0",
+  "chainId": "1",
+  "createdAt": 1745337600000,
+  "meta": {
+    "name": "Origin Triad — Router Wiring (script 04)",
+    "description": "Wire the existing EulerRouter to price USDC and WBTC in WETH via CrossAdapters, and register the 3 borrow vaults as resolved so their eShares can be used as collateral across the triad.",
+    "txBuilderVersion": "1.17.1",
+    "createdFromSafeAddress": "0x4f894Bfc9481110278C356adE1473eBe2127Fd3C",
+    "createdFromOwnerAddress": "",
+    "checksum": "0x0000000000000000000000000000000000000000000000000000000000000000"
+  },
+  "transactions": [
+    {
+      "to": "0xd4Dc83f8041B9B9BcE50850edc99B90830bCa3C3",
+      "value": "0",
+      "data": "0x06c570c1000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb48000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc20000000000000000000000002f4c1c40157dc24737d25f0f0c9bbe5b46a3ac9e",
+      "contractMethod": null,
+      "contractInputsValues": null
+    },
+    {
+      "to": "0xd4Dc83f8041B9B9BcE50850edc99B90830bCa3C3",
+      "value": "0",
+      "data": "0x06c570c10000000000000000000000002260fac5e5542a773aa44fbcfedf7c193bc2c599000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc20000000000000000000000006e39ef4efd7f473d447572276cfa3e607fade01a",
+      "contractMethod": null,
+      "contractInputsValues": null
+    },
+    {
+      "to": "0xd4Dc83f8041B9B9BcE50850edc99B90830bCa3C3",
+      "value": "0",
+      "data": "0xd6c02926000000000000000000000000b639d1b47215d1bc6e2d33b299b3f386627c0f2b0000000000000000000000000000000000000000000000000000000000000001",
+      "contractMethod": null,
+      "contractInputsValues": null
+    },
+    {
+      "to": "0xd4Dc83f8041B9B9BcE50850edc99B90830bCa3C3",
+      "value": "0",
+      "data": "0xd6c02926000000000000000000000000915104922e6a55b00b7245d56ee950cd591782c20000000000000000000000000000000000000000000000000000000000000001",
+      "contractMethod": null,
+      "contractInputsValues": null
+    },
+    {
+      "to": "0xd4Dc83f8041B9B9BcE50850edc99B90830bCa3C3",
+      "value": "0",
+      "data": "0xd6c029260000000000000000000000002ff5f1ca35f5100226ac58e1bfe5aac56919443b0000000000000000000000000000000000000000000000000000000000000001",
+      "contractMethod": null,
+      "contractInputsValues": null
+    }
+  ]
+}

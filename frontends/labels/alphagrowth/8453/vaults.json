@@ -48,5 +48,15 @@
 		"name": "ZRO Collateral",
 		"description": "ZRO collateral vault. Use ZRO as collateral to borrow USDC or ETH.",
 		"entity": "layerzero"
+	},
+	"0x80D12d0bCFa5160b8959c4FFd008858b837928ac": {
+		"name": "USDC Lending",
+		"description": "Lend USDC to earn yield from agVVVWETHlp collateral borrowers.",
+		"entity": "alphagrowth"
+	},
+	"0x9166De33c9c128825b8866dc2860BDA3E1d778D9": {
+		"name": "agVVVWETHlp Collateral",
+		"description": "AlphaGrowth VVV/WETH Buyback LP vault — Aerodrome LP staked for AERO emissions, harvested into a per-share VVV pile.",
+		"entity": "alphagrowth"
 	}
 }

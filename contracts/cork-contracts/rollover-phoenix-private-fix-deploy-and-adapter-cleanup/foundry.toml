@@ -1,0 +1,49 @@
+[profile.default]
+src = "contracts"
+evm_version = "prague"
+out = "out"
+libs = ["node_modules", "lib"]
+test = "test"
+cache_path = "cache_forge"
+ffi = true
+ast = true
+build_info = true
+extra_output = ["storageLayout"]
+optimizer = true
+optimizer_runs = 1_000_000
+solc_version = "0.8.30"
+via_ir = true
+fs_permissions = [{ access = "read", path = "./"}, { access = "read-write", path = "./networks.json"}]
+# solc warning 2018 = "function state mutability can be restricted to pure". PR 2 stubs
+# revert in every external body, so every stub matches this pattern. Real implementations
+# (PR 3 / 4b / 4c / 4d) read and write state, so the warning stops firing once a stub is
+# replaced. Revisit this line after PR 4e and remove if no longer needed.
+ignored_error_codes = [2018]
+
+[lint]
+# lint_on_build walks the dependency graph including lib/**. phoenix (pulled via
+# lib/cellar/lib/phoenix) has `import {IErrors} from "contracts/interfaces/IErrors.sol"`
+# — a phoenix-internal self-reference that assumes phoenix's repo root is the compilation
+# root. Our build resolves the import correctly via remappings, but forge lint's walker
+# fails it. Disable lint-on-build and run `forge lint contracts/` explicitly for our own
+# code when needed.
+lint_on_build = false
+
+
+[invariant]
+runs = 32
+depth = 15
+fail_on_revert = false
+
+[profile.ci.invariant]
+runs = 5000
+depth = 50
+fail_on_revert = false
+
+# Compile only the production code with IR see https://github.com/foundry-rs/forge-std/issues/321#issuecomment-1462351522
+[profile.optimized]
+out = "optimized-out"
+test = "test"
+via_ir = true
+optimizer = true
+optimizer_runs = 1_000_000

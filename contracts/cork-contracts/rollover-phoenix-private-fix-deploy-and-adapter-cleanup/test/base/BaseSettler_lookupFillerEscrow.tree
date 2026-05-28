@@ -1,0 +1,9 @@
+BaseSettler_lookupFillerEscrow
+├── when the concrete is PartialFillSettler AND no fillerRollovers entry exists for the pair
+│   └── it should return a zero FillerEscrow with filler address zero
+├── when the concrete is PartialFillSettler AND a fillerRollovers entry exists for the pair
+│   └── it should return the escrow mapped from _fillerRollovers including srcCstProvided and dstCstProduced
+├── when the concrete is ExactFillSettler AND no fillRecords entry exists for the orderId
+│   └── it should return a zero FillerEscrow with dstCstProduced zero and filledAt zero
+└── when the concrete is ExactFillSettler AND a fillRecords entry exists for the orderId
+    └── it should return the escrow mapped from the rollover-output-hash FillRecord including dstCstProduced and filledAt

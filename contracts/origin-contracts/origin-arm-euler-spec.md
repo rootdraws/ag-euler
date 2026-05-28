@@ -6,6 +6,10 @@ Status: DEPLOYED
 Date: 2026-03-12
 Chain: Ethereum Mainnet (chainId 1)
 
+> Note: the ARM/WETH market is extended into a 3-asset cross-margin triad
+> (ARM + USDC + WBTC) by the `contracts/mainnet-contracts/` project, which
+> shares the same EulerRouter and AG Safe governance.
+
 ---
 
 ## Table of Contents
@@ -638,7 +642,7 @@ This ensures:
 
 2. **EulerSwap deployment**: Origin deploys the EulerSwap pool via Maglev. Pending Origin action.
 
-3. **Governance/multisig**: Deployer EOA currently holds governor role on the EulerRouter and vault parameters. Transfer to multisig TBD.
+3. **Governance/multisig**: Governance on the EulerRouter, ARM collateral vault, and WETH borrow vault has been rotated to the AG Safe (`0x4f894Bfc9481110278C356adE1473eBe2127Fd3C`) via `08_RotateGovernance.s.sol`. Any change to these three contracts must be executed via the Safe. The new USDC + WBTC vaults (scripts 11+) retain the deployer EOA as governor for operational control during bring-up.
 
 ### Open Questions
 

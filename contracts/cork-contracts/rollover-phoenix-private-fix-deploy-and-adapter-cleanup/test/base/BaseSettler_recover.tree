@@ -1,0 +1,25 @@
+BaseSettler_recover
+├── when signature is empty bytes
+│   └── it should revert with InvalidSignature
+├── when signature is a raw ECDSA 65-byte
+│   ├── when recovered signer equals order.user
+│   │   └── it should return true
+│   ├── when recovered signer differs from order.user
+│   │   └── it should revert with InvalidSignature
+│   ├── when signature is 64 bytes EIP-2098 compact and recovers to order.user
+│   │   └── it should return true
+│   ├── when s is in the upper half of the curve order
+│   │   └── it should revert with InvalidSignature
+│   └── when signature length is neither 64 nor 65
+│       └── it should revert with InvalidSignature
+├── when order.user has code and is a smart wallet
+│   ├── when isValidSignature returns the ERC-1271 MAGIC 0x1626ba7e
+│   │   └── it should return true
+│   ├── when isValidSignature returns any other value
+│   │   └── it should revert with InvalidSignature
+│   ├── when isValidSignature reverts
+│   │   └── it should revert with InvalidSignature
+│   └── when the wallet selfdestructs mid-verification
+│       └── it should revert with InvalidSignature
+└── when verifying a signature produced for a different settler's domain
+    └── it should revert with InvalidSignature

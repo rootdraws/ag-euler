@@ -1,0 +1,84 @@
+EvcRolloverAdapter_execute_Exact
+├── when destination is the zero address
+│   └── it should revert with EvcRolloverAdapter ZeroDestination before any EVC or balance interaction
+├── when execute is called outside an evc batch so EVC getCurrentOnBehalfOfAccount returns the zero address
+│   └── it should revert with EvcRolloverAdapter InvalidCaller
+├── when EVC getCurrentOnBehalfOfAccount reverts or otherwise yields a zero caller for this msg sender
+│   └── it should revert with EvcRolloverAdapter InvalidCaller
+├── when the adapter holds zero srcCST and srcCstAmount is non zero
+│   └── it should revert with EvcRolloverAdapter InsufficientTokens and report required equals srcCstAmount and available equals zero
+├── when the adapter holds srcCST strictly less than srcCstAmount
+│   └── it should revert with EvcRolloverAdapter InsufficientTokens and report the observed balance as available
+├── when the adapter srcCST balance equals srcCstAmount exactly
+│   └── it should pass the pre balance check and proceed into the rollover leg
+├── when the adapter srcCST balance exceeds srcCstAmount
+│   └── it should pass the pre balance check and retain the excess after execute ends because the adapter never sweeps leftovers
+├── when srcCstAmount is zero and the adapter holds at least zero srcCST so the pre balance check passes trivially
+│   └── it should reframe at scaffold time to match the real stack revert surface observed by the landed RolloverFiller Exact suite which varies between PartialFillNotAllowed and the PoolManager srcCST balance insufficiency revert depending on fixture fidelity
+├── when SETTLER openFor reverts with InvalidSignature
+│   └── it should bubble InvalidSignature
+├── when SETTLER openFor reverts with NotMaker for non gasless flow
+│   └── it should bubble NotMaker
+├── when SETTLER openFor reverts with InconsistentIntent because allowPartialFills is true
+│   └── it should bubble InconsistentIntent
+├── when SETTLER openFor reverts with InvalidOrderTokenPair because srcCstToken equals premiumToken
+│   └── it should bubble InvalidOrderTokenPair
+├── when the order is already Opened by a prior openFor call
+│   └── it should treat the openFor as a no op idempotent success and proceed into the rollover leg
+├── when SETTLER fill rollover leg reverts with FillAfterDeadline
+│   └── it should bubble FillAfterDeadline and end the transaction with srcCST approval equal to zero
+├── when SETTLER fill rollover leg reverts with AlreadyFilled because the rollover output was already filled
+│   └── it should bubble AlreadyFilled and end with srcCST approval equal to zero
+├── when SETTLER fill rollover leg reverts with PartialFillNotAllowed because output amount is not equal to orderSize
+│   └── it should bubble PartialFillNotAllowed
+├── when SETTLER fill rollover leg reverts with IntentNotBoundToOrder because orderData cellarIntentHash is stale
+│   └── it should bubble IntentNotBoundToOrder
+├── when SETTLER fill rollover leg reverts with DisproportionateOutput
+│   └── it should bubble DisproportionateOutput
+├── when SETTLER fill rollover leg reverts with OrderInTerminalState
+│   └── it should bubble OrderInTerminalState
+├── when SETTLER fill rollover leg succeeds
+│   ├── it should forward srcCstAmount worth of srcCST allowance to the settler before the call
+│   ├── it should observe a FillRecord for the rollover outputHash on the settler
+│   ├── it should observe escrowed dstCST on the settler equal to dstCstProduced
+│   └── it should reset srcCST allowance from the adapter to the settler to zero before the premium leg
+├── when SETTLER fill premium leg reverts with PremiumBeforeRollover in a contrived path
+│   └── it should bubble PremiumBeforeRollover
+├── when SETTLER fill premium leg reverts with AlreadyFilled because the premium output was already filled
+│   └── it should bubble AlreadyFilled
+├── when SETTLER fill premium leg reverts with InsufficientBalance because debitFrom ERC 6909 balance is short
+│   └── it should bubble InsufficientBalance and leave ERC 6909 state unchanged
+├── when SETTLER fill premium leg reverts with UnauthorizedSettler because debitFrom has not set the settler as operator
+│   └── it should bubble UnauthorizedSettler
+├── when debitFrom has not authorized the adapter so BaseSettler _requireDebitFromAuthorized rejects before reaching ERC 6909 settle
+│   └── it should bubble UnauthorizedDebitFrom matching the landed RolloverFiller Exact coverage at test/filler/exact/RolloverFiller_execute.t.sol:682
+├── when SETTLER fill premium leg succeeds
+│   ├── it should debit exactly requiredPremium from debitFrom ERC 6909 balance
+│   ├── it should transfer requiredPremium premium tokens to the UW cellar
+│   ├── it should flip paymentSettled to true on the settler
+│   └── it should not leave any residual srcCST allowance on the settler
+├── when the premium hook inside the cellar reverts during the premium leg
+│   └── it should revert the whole execute and leave both rollover and premium settler state unchanged
+├── when SETTLER finaliseAsSettled reverts with InvalidOrderStatus
+│   └── it should bubble InvalidOrderStatus
+├── when SETTLER finaliseAsSettled reverts with PaymentNotSettled
+│   └── it should bubble PaymentNotSettled
+├── when the full execute happy path completes with the adapter funded exactly to srcCstAmount
+│   ├── it should leave the adapter holding zero srcCST INV F1 srcCST exact funding case
+│   ├── it should leave the adapter holding zero dstCST INV F1
+│   ├── it should leave the adapter holding zero ERC 6909 balance for premiumToken INV F4
+│   ├── it should leave zero srcCST allowance from the adapter to the settler INV F2
+│   ├── it should deliver dstCstProduced dstCST to destination
+│   └── it should emit zero events whose emitter is the adapter contract INV F8
+├── when the full execute happy path completes but the adapter was funded with more srcCST than the rollover consumed
+│   ├── it should deliver dstCstProduced dstCST to destination
+│   ├── it should leave the residual srcCST on the adapter because the adapter does not sweep leftovers RFC 7.3
+│   └── it should leave zero srcCST allowance from the adapter to the settler INV F2
+├── when EVC getCurrentOnBehalfOfAccount returns a valid caller that authorized the adapter as an operator and debitFrom equals that caller
+│   └── it should complete the happy path with premium debited from the resolved caller INV F6
+├── when debitFrom is a different subaccount that authorized the settler and the adapter via ERC 6909 setOperator
+│   └── it should complete the happy path with premium debited from that subaccount independently of the EVC resolved caller
+├── when destination is a contract and the attacker wants to reenter execute documented non reproducible gap because plain ERC 20 transfers to the destination do not call a recipient callback matches landed RolloverFiller suite framing
+│   └── it should mark the leaf as a documented non reproducible gap and assert the adapter still holds INV F1 INV F2 post execute rather than asserting a ReentrancyGuardReentrantCall revert
+└── when the same evc batch contains a second BatchItem that calls execute again after a successful first execute in the same transaction
+    └── it should allow the second execute because ReentrancyGuardTransient clears between batch items as long as each call completes cleanly

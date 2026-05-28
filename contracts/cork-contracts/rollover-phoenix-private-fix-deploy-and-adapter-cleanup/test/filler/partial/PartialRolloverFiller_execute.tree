@@ -1,0 +1,83 @@
+PartialRolloverFiller_execute
+├── when destination is the zero address
+│   └── it should revert with RolloverFiller ZeroDestination before any settler interaction
+├── when srcCstAmount is zero
+│   └── it should revert at SETTLER fill with ZeroRollover cellar defense in depth
+├── when caller has not approved the filler to pull srcCST
+│   └── it should revert with SafeERC20 SafeERC20FailedOperation no approval
+├── when caller srcCST balance is less than srcCstAmount
+│   └── it should revert with SafeERC20 SafeERC20FailedOperation insufficient balance
+├── when SETTLER openFor reverts with InvalidSignature
+│   └── it should bubble InvalidSignature
+├── when SETTLER openFor reverts with InconsistentIntent because allowPartialFills is false
+│   └── it should bubble InconsistentIntent
+├── when the order is already Opened by a prior call
+│   └── it should treat openFor as a no op idempotent success and proceed into the rollover leg
+├── when fillerData is constructed for the rollover leg
+│   ├── it should encode outputIndex 0 followed by PartialFillerData
+│   ├── it should set targetFiller equal to address this so the settler TargetFillerMismatch guard passes
+│   ├── it should embed the CellarIntent struct decoded from orderData
+│   └── it should embed the CellarIntent signature decoded from orderData
+├── when SETTLER fill rollover leg reverts with FillAfterDeadline because block timestamp is past order fillDeadline
+│   └── it should bubble FillAfterDeadline parity with Exact tree
+├── when SETTLER fill rollover leg reverts with TargetFillerMismatch because targetFiller is not the filler contract
+│   └── it should bubble TargetFillerMismatch defensive leaf
+├── when SETTLER fill rollover leg reverts with AlreadyFilledByFiller because the same filler already filled this digest
+│   └── it should bubble AlreadyFilledByFiller and leave srcCST approval at zero
+├── when SETTLER fill rollover leg reverts with ZeroRollover because the cellar returned actualRolled equal to zero
+│   └── it should bubble ZeroRollover
+├── when SETTLER fill rollover leg reverts with IntentNotBoundToOrder because cellarIntentHash is stale
+│   └── it should bubble IntentNotBoundToOrder
+├── when SETTLER fill rollover leg reverts with OrderInTerminalState
+│   └── it should bubble OrderInTerminalState
+├── when SETTLER fill rollover leg succeeds with actualRolled equal to srcCstAmount full fill
+│   ├── it should record a FillerRollover entry keyed by orderDigest and address this
+│   ├── it should set srcCstProvided equal to srcCstAmount
+│   ├── it should set dstCstProduced equal to the cellar computed amount
+│   ├── it should set destination equal to the destination parameter
+│   ├── it should leave premiumSettled and finalised and refunded all false
+│   └── it should reset srcCST allowance from the filler to the settler to zero
+├── when SETTLER fill rollover leg succeeds with actualRolled less than srcCstAmount underfill permitted
+│   ├── it should record srcCstProvided equal to actualRolled not the requested amount
+│   └── it should return srcCstAmount minus actualRolled srcCST to the caller at the end of execute INV F3
+├── when SETTLER fill premium leg reverts with NoRolloverLegForFiller
+│   └── it should bubble NoRolloverLegForFiller defensive leaf
+├── when SETTLER fill premium leg reverts with AlreadySettled because the filler premium slot already fired
+│   └── it should bubble AlreadySettled
+├── when SETTLER fill premium leg reverts with UnauthorizedDebitFrom
+│   └── it should bubble UnauthorizedDebitFrom
+├── when SETTLER fill premium leg reverts with InsufficientBalance because debitFrom ERC 6909 balance is short
+│   └── it should bubble InsufficientBalance
+├── when SETTLER fill premium leg succeeds
+│   ├── it should debit ceil of dstCstProduced times minPremiumPerShare divided by 1e18 from debitFrom ERC 6909 balance
+│   ├── it should transfer the premium to the UW cellar
+│   ├── it should set FillerRollover premiumSettled for orderDigest and address this to true
+│   └── it should fire the cellar phase 1 premiumHooks exactly once for this filler
+├── when the premium hook inside the cellar reverts during the premium leg
+│   └── it should complete execute; the AS-10 try/catch on _onPremiumLegFill commits premiumSettled and emits PremiumHooksReverted (closes #58)
+├── when SETTLER finaliseAsSettled with orderDigest and fillers array containing address this is called at the end of execute
+│   ├── it should release the filler dstCstProduced to destination
+│   ├── it should set FillerRollover finalised for this filler to true
+│   └── it should decrement totalDstCstEscrowed for orderDigest by dstCstProduced
+├── when SETTLER finaliseAsSettled reverts with InvalidOrderStatus
+│   └── it should bubble InvalidOrderStatus
+├── when a second distinct RolloverFiller instance separately deployed against the same Partial settler runs execute on the same orderDigest after the first filler completed
+│   ├── it should record a FillerRollover entry keyed by orderDigest and address secondFiller
+│   ├── it should not collide with the first filler slot INV P1
+│   └── it should settle independently via finaliseAsSettled with fillers equal to address secondFiller
+├── when the full execute happy path completes with an exact fill
+│   ├── it should satisfy INV F1 zero token balances on the filler contract
+│   ├── it should satisfy INV F2 zero allowances from the filler contract
+│   ├── it should satisfy INV F4 zero ERC 6909 balances on the filler contract
+│   ├── it should satisfy INV F8 no events whose emitter is the filler contract
+│   └── it should deliver dstCstProduced dstCST to destination
+├── when the full execute happy path completes with an underfill
+│   ├── it should satisfy INV F3 leftover srcCST returned to caller
+│   └── it should deliver dstCstProduced dstCST to destination
+├── when destination is a contract whose fallback reenters execute
+│   └── it should revert with ReentrancyGuardReentrantCall
+└── when debitFrom is a third party that authorized the settler and the filler contract via ERC 6909 setOperator
+    └── it should complete happy path with premium debited from debitFrom
+
+├── when reading the EXPECTED_THREAT_MODEL constant
+│   └── it should return shared-singleton per RFC 003 section 7.2

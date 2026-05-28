@@ -1,0 +1,4 @@
+BaseSettler_domainSeparator
+├── it should compute EIP-712 domain over the settler's own address
+├── it should bind chainId at deploy time
+└── it should differ between two settler instances deployed on the same chain

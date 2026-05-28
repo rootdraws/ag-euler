@@ -1,0 +1,57 @@
+{
+  "version": "1.0",
+  "chainId": "42161",
+  "createdAt": 1746396000000,
+  "meta": {
+    "name": "AG Arbitrum — kill alphagrowth-arbitrum cluster",
+    "description": "Zero LTVs and caps on the empty alphagrowth-arbitrum cluster (yUSND/USND, reUSD/USDC). TVL=0 and totalBorrows=0 across all 4 vaults — no active users — so LTVs can drop instantly (no ramp). After this executes, no new positions can open. Note: LTVList entries remain visible permanently (EVK has no removal function), but values are 0 so functionally the cluster is dead.",
+    "txBuilderVersion": "1.17.0",
+    "createdFromSafeAddress": "0x4f894Bfc9481110278C356adE1473eBe2127Fd3C",
+    "createdFromOwnerAddress": "",
+    "checksum": "0x0000000000000000000000000000000000000000000000000000000000000000"
+  },
+  "transactions": [
+    {
+      "to": "0x4aD21eBbB639c21ccd9F1eaF388Cd91D015E02ee",
+      "value": "0",
+      "data": "0x4bca3d5b000000000000000000000000124bec4d119bc4b5d250f0b0114f2087f8eedb57000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      "contractMethod": null,
+      "contractInputsValues": null
+    },
+    {
+      "to": "0x06b763aA769ad01F6859a56c5a856E47896e6a7F",
+      "value": "0",
+      "data": "0x4bca3d5b0000000000000000000000008ca487811a5e7599a5c68f49ac1fe348371e4c46000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      "contractMethod": null,
+      "contractInputsValues": null
+    },
+    {
+      "to": "0x124BeC4d119bc4B5d250f0b0114f2087f8EeDB57",
+      "value": "0",
+      "data": "0xd87f780f00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      "contractMethod": null,
+      "contractInputsValues": null
+    },
+    {
+      "to": "0x4aD21eBbB639c21ccd9F1eaF388Cd91D015E02ee",
+      "value": "0",
+      "data": "0xd87f780f00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      "contractMethod": null,
+      "contractInputsValues": null
+    },
+    {
+      "to": "0x8Ca487811a5e7599A5c68F49Ac1fE348371e4c46",
+      "value": "0",
+      "data": "0xd87f780f00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      "contractMethod": null,
+      "contractInputsValues": null
+    },
+    {
+      "to": "0x06b763aA769ad01F6859a56c5a856E47896e6a7F",
+      "value": "0",
+      "data": "0xd87f780f00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      "contractMethod": null,
+      "contractInputsValues": null
+    }
+  ]
+}

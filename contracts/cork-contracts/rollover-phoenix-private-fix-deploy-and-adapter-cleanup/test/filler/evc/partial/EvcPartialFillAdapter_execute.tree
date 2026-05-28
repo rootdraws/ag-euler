@@ -1,0 +1,99 @@
+EvcPartialFillAdapter_execute
+├── when destination is the zero address
+│   └── it should revert with EvcRolloverAdapter ZeroDestination before any EVC or balance interaction
+├── when execute is called outside an evc batch so EVC getCurrentOnBehalfOfAccount returns the zero address
+│   └── it should revert with EvcRolloverAdapter InvalidCaller
+├── when EVC getCurrentOnBehalfOfAccount reverts or otherwise yields a zero caller for this msg sender
+│   └── it should revert with EvcRolloverAdapter InvalidCaller
+├── when the adapter holds zero srcCST and srcCstAmount is non zero
+│   └── it should revert with EvcRolloverAdapter InsufficientTokens and report required equals srcCstAmount and available equals zero
+├── when the adapter holds srcCST strictly less than srcCstAmount
+│   └── it should revert with EvcRolloverAdapter InsufficientTokens and report the observed balance as available
+├── when the adapter srcCST balance equals srcCstAmount exactly
+│   └── it should pass the pre balance check and proceed into the rollover leg
+├── when the adapter srcCST balance exceeds srcCstAmount and the rollover consumes less than srcCstAmount
+│   └── it should retain both the pre balance excess and any partial fill leftover on the adapter because the adapter does not sweep leftovers
+├── when srcCstAmount is zero
+│   └── it should revert at the settler rollover leg with ZeroRollover cellar defense in depth
+├── when SETTLER openFor reverts with InvalidSignature
+│   └── it should bubble InvalidSignature
+├── when SETTLER openFor reverts with InconsistentIntent because allowPartialFills is false
+│   └── it should bubble InconsistentIntent
+├── when the order is already Opened by a prior call
+│   └── it should treat openFor as a no op idempotent success and proceed into the rollover leg
+├── when fillerData is constructed for the rollover leg
+│   ├── it should encode outputIndex 0 followed by PartialFillerData
+│   ├── it should set targetFiller equal to address this adapter so the settler TargetFillerMismatch guard passes
+│   ├── it should embed the CellarIntent struct decoded from orderData
+│   └── it should embed the CellarIntent signature decoded from orderData
+├── when SETTLER fill rollover leg reverts with FillAfterDeadline because block timestamp is past order fillDeadline
+│   └── it should bubble FillAfterDeadline parity with Exact tree
+├── when SETTLER fill rollover leg reverts with TargetFillerMismatch because targetFiller is not the adapter
+│   └── it should bubble TargetFillerMismatch defensive leaf
+├── when SETTLER fill rollover leg reverts with AlreadyFilledByFiller because the same adapter already filled this digest
+│   └── it should bubble AlreadyFilledByFiller and leave srcCST approval at zero
+├── when SETTLER fill rollover leg reverts with ZeroRollover because the cellar returned actualRolled equal to zero
+│   └── it should bubble ZeroRollover
+├── when SETTLER fill rollover leg reverts with IntentNotBoundToOrder because cellarIntentHash is stale
+│   └── it should bubble IntentNotBoundToOrder
+├── when SETTLER fill rollover leg reverts with DisproportionateOutput because cellar srcLeftover accounting diverges from actualRolled requires malicious or mis configured cellar module fixture parity with test partial PartialFillSettler maliciousCellar
+│   └── it should bubble DisproportionateOutput
+├── when SETTLER fill rollover leg reverts with OrderInTerminalState
+│   └── it should bubble OrderInTerminalState
+├── when SETTLER fill rollover leg succeeds with actualRolled equal to srcCstAmount full fill
+│   ├── it should record a FillerRollover entry keyed by orderDigest and address this adapter
+│   ├── it should set srcCstProvided equal to srcCstAmount
+│   ├── it should set dstCstProduced equal to the cellar computed amount
+│   ├── it should set destination equal to the destination parameter
+│   ├── it should leave premiumSettled and finalised and refunded all false
+│   └── it should reset srcCST allowance from the adapter to the settler to zero
+├── when SETTLER fill rollover leg succeeds with actualRolled less than srcCstAmount underfill permitted
+│   ├── it should record srcCstProvided equal to actualRolled not the requested amount
+│   └── it should retain srcCstAmount minus actualRolled srcCST on the adapter because the adapter does not sweep leftovers RFC 7.3
+├── when SETTLER fill premium leg reverts with NoRolloverLegForFiller
+│   └── it should bubble NoRolloverLegForFiller defensive leaf
+├── when SETTLER fill premium leg reverts with AlreadySettled because the adapter premium slot already fired
+│   └── it should bubble AlreadySettled
+├── when SETTLER fill premium leg reverts with UnauthorizedDebitFrom
+│   └── it should bubble UnauthorizedDebitFrom
+├── when SETTLER fill premium leg reverts with InsufficientBalance because debitFrom ERC 6909 balance is short
+│   └── it should bubble InsufficientBalance
+├── when SETTLER fill premium leg succeeds
+│   ├── it should debit ceil of dstCstProduced times minPremiumPerShare divided by 1e18 from debitFrom ERC 6909 balance
+│   ├── it should transfer the premium to the UW cellar
+│   ├── it should set FillerRollover premiumSettled for orderDigest and address this adapter to true
+│   └── it should fire the cellar phase 1 premiumHooks exactly once for this adapter
+├── when the premium hook inside the cellar reverts during the premium leg
+│   └── it should complete execute; the AS-10 try/catch on _onPremiumLegFill commits premiumSettled and emits PremiumHooksReverted (closes #58)
+├── when SETTLER finaliseAsSettled with orderDigest and fillers array containing address this adapter is called at the end of execute
+│   ├── it should release the adapter dstCstProduced to destination
+│   ├── it should set FillerRollover finalised for this adapter to true
+│   └── it should decrement totalDstCstEscrowed for orderDigest by dstCstProduced
+├── when SETTLER finaliseAsSettled reverts with InvalidOrderStatus
+│   └── it should bubble InvalidOrderStatus
+├── when a second distinct EvcRolloverAdapter instance separately deployed against the same Partial settler runs execute on the same orderDigest after the first adapter already called finaliseAsSettled which drove the order into a terminal state
+│   └── it should revert at the second adapter SETTLER fill rollover leg with OrderInTerminalState because the atomic execute finalises immediately and the digest is no longer Opened
+├── when a second distinct EvcRolloverAdapter instance separately deployed against the same Partial settler runs execute on a different orderDigest concurrently with the first adapter
+│   ├── it should record a FillerRollover entry keyed by the second orderDigest and address secondAdapter
+│   ├── it should not collide with the first adapter slot INV P1
+│   └── it should settle independently via finaliseAsSettled with fillers equal to address secondAdapter
+├── when the full execute happy path completes with the adapter funded exactly to srcCstAmount and the rollover consumed all of it
+│   ├── it should satisfy INV F1 adapter balance equals zero for srcCST and dstCST
+│   ├── it should satisfy INV F2 zero allowances from the adapter contract
+│   ├── it should satisfy INV F4 zero ERC 6909 balances on the adapter contract
+│   ├── it should satisfy INV F8 no events whose emitter is the adapter contract
+│   └── it should deliver dstCstProduced dstCST to destination
+├── when the full execute happy path completes with an underfill so the adapter retains leftover srcCST
+│   ├── it should satisfy INV F2 zero allowances from the adapter contract
+│   └── it should deliver dstCstProduced dstCST to destination
+├── when EVC getCurrentOnBehalfOfAccount returns a valid caller and debitFrom equals that caller
+│   └── it should complete the happy path with premium debited from the resolved caller INV F6
+├── when debitFrom is a different subaccount that authorized the settler and the adapter via ERC 6909 setOperator
+│   └── it should complete the happy path with premium debited from that subaccount independently of the EVC resolved caller
+├── when destination is a contract and the attacker wants to reenter execute documented non reproducible gap because plain ERC 20 transfers to the destination do not call a recipient callback matches landed RolloverFiller suite framing
+│   └── it should mark the leaf as a documented non reproducible gap and assert the adapter still holds INV F1 INV F2 post execute rather than asserting a ReentrancyGuardReentrantCall revert
+└── when the same evc batch contains a second BatchItem that calls execute again on a different orderDigest after a successful first execute
+    └── it should allow the second execute because ReentrancyGuardTransient clears between batch items as long as each call completes cleanly
+
+├── when reading the EXPECTED_THREAT_MODEL constant
+│   └── it should return per-subaccount per RFC 003 section 7.3

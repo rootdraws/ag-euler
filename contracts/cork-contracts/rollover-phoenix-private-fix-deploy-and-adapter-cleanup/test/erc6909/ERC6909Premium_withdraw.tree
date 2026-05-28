@@ -1,0 +1,11 @@
+ERC6909Premium_withdraw
+├── when msg.sender has insufficient balance for the tokenId
+│   └── it should revert with InsufficientBalance
+├── when to is the zero address
+│   └── it should revert with InvalidRecipient
+├── when all preconditions hold
+│   └── it should decrement balanceOf[msg.sender][tokenId] by amount, IERC20.safeTransfer amount to to, and emit Transfer from msg.sender to address(0)
+├── when the underlying token transfer reverts
+│   └── it should revert with the bubbled transfer error and leave balance unchanged
+└── when a reentrant withdraw is attempted
+    └── it should revert with ReentrancyGuardReentrantCall

@@ -1,0 +1,7 @@
+PartialFillSettler_totalDstCstEscrowed
+├── when no fills have been recorded for orderDigest
+│   └── it should return zero
+├── when fills have been recorded and no finalisations
+│   └── it should return the sum of f.dstCstProduced across eligible fillers
+└── when some fillers have been finalised or refunded
+    └── it should return the sum decremented by the settled and refunded amounts

@@ -1,0 +1,22 @@
+ERC6909Premium_settle
+├── when msg.sender is not authorized by debitFrom
+│   └── it should revert with UnauthorizedSettler
+├── when premiumFiller is not authorized by debitFrom
+│   └── it should revert with UnauthorizedPremiumFiller
+├── when balanceOf(debitFrom, tokenId) is less than amount
+│   └── it should revert with InsufficientBalance
+├── when amount is zero
+│   └── it should no-op successfully
+├── when all checks pass
+│   ├── it should decrement debitFrom's balance by amount
+│   ├── it should IERC20.safeTransfer amount to recipient
+│   ├── it should emit Settled
+│   └── it should complete atomically
+├── when the token reverts in transfer
+│   └── it should revert with the bubbled token error and leave balance unchanged (no partial debit)
+├── when the token returns false on transfer
+│   └── it should revert with SafeERC20FailedOperation
+├── when FoT token transfer delivers less than amount
+│   └── it should revert with SettleBalanceMismatch and leave balance unchanged
+└── when a reentrant settle is attempted
+    └── it should revert with ReentrancyGuardReentrantCall

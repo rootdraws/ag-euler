@@ -23,5 +23,15 @@
 		"name": "WETH Lending",
 		"description": "WETH lending vault for Origin ARM market",
 		"entity": "origin"
+	},
+	"0xb639d1B47215d1Bc6E2d33b299b3F386627c0F2b": {
+		"name": "USDC Lending",
+		"description": "USDC borrow vault in the AG ETH/USDC/WBTC cross-margin triad. Accepts WETH (eWETH) and WBTC (eWBTC) as collateral.",
+		"entity": "alphagrowth"
+	},
+	"0x915104922E6a55B00B7245d56EE950cd591782C2": {
+		"name": "WBTC Lending",
+		"description": "WBTC borrow vault in the AG ETH/USDC/WBTC cross-margin triad. Accepts WETH (eWETH) and USDC (eUSDC) as collateral.",
+		"entity": "alphagrowth"
 	}
 }

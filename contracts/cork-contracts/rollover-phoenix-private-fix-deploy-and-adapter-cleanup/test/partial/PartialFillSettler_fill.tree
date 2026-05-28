@@ -1,0 +1,82 @@
+PartialFillSettler_fill
+├── when block.timestamp is greater than order.fillDeadline
+│   └── it should revert with FillAfterDeadline
+├── when orderStatus is Settled or Refunded or Cancelled
+│   └── it should revert with OrderInTerminalState
+├── when orderData.allowPartialFills is false
+│   └── it should revert with InconsistentIntent
+├── when orderData.srcCstToken equals orderData.premiumToken
+│   └── it should revert with InvalidOrderTokenPair
+├── when orderData.exclusiveFiller is set AND msg.sender is not that address
+│   └── it should revert with NotExclusiveFiller
+├── when orderData.exclusiveFiller is set AND msg.sender is that address
+│   └── it should accept the fill
+├── when orderData.minFillSize is non-zero AND output.amount is less than minFillSize
+│   └── it should revert with BelowMinFillSize
+├── when orderData.minFillSize is non-zero AND rollover fill leaves residual strictly between zero and minFillSize
+│   └── it should revert with ResidualTruncates
+├── when orderData.minFillSize is non-zero AND rollover fill closes the order exactly
+│   └── it should accept the fill regardless of residual-below-minFillSize rule
+├── when orderData.minFillSize is non-zero AND caller fills the premium leg with premium output.amount below minFillSize
+│   └── it should admit the premium leg (AS-19 is rollover-leg only)
+├── when collateralAsset decimals are 6 AND rollover output.amount is aligned to the decimal offset
+│   └── it should accept the fill (AS-20 gate admits)
+├── when collateralAsset decimals are 6 AND rollover output.amount is not aligned to the decimal offset
+│   └── it should revert with DecimalTruncates
+├── when collateralAsset decimals are 18 or greater
+│   └── it should be a no-op regardless of rollover output.amount modulo (AS-20 early return)
+├── when intent hash mismatches orderData.cellarIntentHash
+│   └── it should revert with IntentNotBoundToOrder
+├── when fillerData.outputIndex is 0 (rollover leg)
+│   ├── when targetFiller is not equal to msg.sender
+│   │   └── it should revert with TargetFillerMismatch
+│   ├── when destination is the zero address
+│   │   └── it should revert with InvalidDestination
+│   ├── when f.srcCstProvided is not zero for the caller
+│   │   └── it should revert with AlreadyFilledByFiller
+│   ├── when cumulative plus output.amount exceeds orderSize
+│   │   └── it should bubble OverfillCeiling from the cellar
+│   ├── when the cellar returns actualRolled equal to zero
+│   │   └── it should revert with ZeroRollover
+│   ├── when allowUnderfill is false AND actualRolled is less than output.amount
+│   │   └── it should bubble UnderfillNotAllowed from the cellar
+│   ├── when actualRolled equals output.amount
+│   │   └── it should write f.srcCstProvided, f.dstCstProduced, f.destination, increment totalDstCstEscrowed and participantCount, pull leftover srcCST to msg.sender, and leave orderStatus unchanged
+│   ├── when actualRolled is less than output.amount AND allowUnderfill is true
+│   │   └── it should write the same filler state with the smaller srcCstProvided
+│   ├── when this fill brings cumulative to orderSize exactly
+│   │   └── it should observe the cellar flip the phase-0 terminal bit and delete rolled[d]
+│   ├── when a subsequent rollover fill is attempted after phase-0 terminal
+│   │   └── it should bubble PhaseAlreadyConsumed from the cellar
+│   ├── when two concurrent fills race past the ceiling
+│   │   └── it should revert with OverfillCeiling for the losing fill (linearised via rolled[])
+│   └── when dstCstProduced exceeds what would fit in uint128
+│       └── it should record FillerRollover.dstCstProduced at full uint256 width without narrowing (PR 3 / #53)
+├── when fillerData.outputIndex is 1 (premium leg)
+│   ├── when f.srcCstProvided is zero for targetFiller
+│   │   └── it should revert with NoRolloverLegForFiller
+│   ├── when f.premiumSettled is already true
+│   │   └── it should revert with AlreadySettled
+│   ├── when debitFrom equals msg.sender
+│   │   └── it should accept the authorization
+│   ├── when debitFrom is not msg.sender AND isOperator is true
+│   │   └── it should accept the authorization
+│   ├── when debitFrom is not msg.sender AND isOperator is false
+│   │   └── it should revert with UnauthorizedDebitFrom
+│   ├── when msg.sender is not targetFiller
+│   │   └── it should accept (anyone may settle another filler's premium)
+│   ├── when all authorization passes
+│   │   ├── it should compute premium as ceilDiv of f.dstCstProduced multiplied by minPremiumPerShare divided by 1e18
+│   │   ├── it should debit via ERC6909.settle
+│   │   ├── it should flip f.premiumSettled to true and leave orderStatus unchanged
+│   │   └── it should forward factory.executeIntentHooks with phase 1 and filler equal to targetFiller
+│   ├── when the cellar phase-1 premiumHooks revert after the ERC-6909 debit
+│   │   └── it should emit PremiumHooksReverted, leave ERC-6909 debit and f.premiumSettled committed, and not revert (AS-10 / #58)
+│   ├── when premiumFiredFor[d][targetFiller] is already true
+│   │   └── it should bubble PremiumAlreadyFiredForFiller from the cellar
+│   └── when factory.originatingSettler() is not intent.settler
+│       └── it should emit PremiumHooksReverted and latch f.premiumSettled (cellar-side revert caught by the AS-10 try/catch)
+├── when fillerData.outputIndex is neither 0 nor 1
+│   └── it should revert with InvalidOutputIndex
+└── when a reentrant fill is attempted from the dstCST transferCallback
+    └── it should revert with ReentrancyGuardReentrantCall

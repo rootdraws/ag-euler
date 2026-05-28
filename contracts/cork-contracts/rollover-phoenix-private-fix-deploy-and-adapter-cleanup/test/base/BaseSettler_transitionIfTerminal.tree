@@ -1,0 +1,15 @@
+BaseSettler_transitionIfTerminal
+├── when participantCount is zero
+│   └── it should return early and leave orderStatus unchanged (Pashov A1 early-return)
+├── when participantCount is non-zero AND finalisedCount plus refundedCount is less than participantCount
+│   └── it should return without transition
+├── when all fillers are accounted for AND totalDstCstEscrowed is non-zero
+│   └── it should return without transition so escrow settles before the terminal flip
+├── when finalisedCount is greater than zero AND hookPhase0Done is false
+│   └── it should NOT transition to Settled (hook-completion gate)
+├── when finalisedCount is greater than zero AND hookPhase0Done is true AND totalDstCstEscrowed is zero
+│   └── it should set orderStatus to Settled and emit OrderFinalised with status Settled
+├── when refundedCount equals participantCount AND finalisedCount is zero
+│   └── it should set orderStatus to Refunded and emit OrderFinalised with status Refunded
+└── when the concrete is a single-participant Exact settler subclass
+    └── it should treat participantCount of 1 finalisedCount of 1 and totalDstCstEscrowed of 0 as terminal (Exact special case)

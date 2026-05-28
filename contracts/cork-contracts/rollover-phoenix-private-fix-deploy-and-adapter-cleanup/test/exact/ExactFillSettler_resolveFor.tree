@@ -1,0 +1,8 @@
+ExactFillSettler_resolveFor
+├── when the order is well-formed
+│   ├── it should return two outputs for the rollover and premium legs
+│   ├── it should set minReceived and maxSpent reflecting orderSize and minPremiumPerShare
+│   ├── it should bake OriginFillerData.outputAmount as Output.amount
+│   └── it should encode originData byte-exact in fillInstructions
+└── when srcCstToken equals premiumToken
+    └── it should revert with InvalidOrderTokenPair

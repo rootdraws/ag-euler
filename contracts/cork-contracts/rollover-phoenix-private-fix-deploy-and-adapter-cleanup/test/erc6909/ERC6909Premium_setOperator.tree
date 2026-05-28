@@ -1,0 +1,9 @@
+ERC6909Premium_setOperator
+├── when approved is true
+│   └── it should set isOperator[msg.sender][operator] to true and emit OperatorSet
+├── when approved is false
+│   └── it should set isOperator[msg.sender][operator] to false and emit OperatorSet
+├── when operator equals msg.sender
+│   └── it should still succeed
+└── when called twice with the same approved value
+    └── it should be idempotent and still emit OperatorSet

@@ -1,0 +1,12 @@
+BaseSettler_recordFillerEscrow
+├── when the concrete is PartialFillSettler AND no prior entry exists for the pair
+│   └── it should write _fillerRollovers with the supplied srcCstProvided dstCstProduced and destination
+├── when the concrete is PartialFillSettler AND no prior entry exists for the pair
+│   └── it should increment participantCount by 1 and add dstCstProduced to _totalDstCstEscrowed
+├── when the concrete is PartialFillSettler AND a first filler has recorded escrow
+│   └── it should leave participantCount at 1 and preserve the first filler's dstCstProduced
+│        (genuine multi-filler coverage is owned end-to-end by PartialFillSettler_fill)
+├── when the concrete is ExactFillSettler AND _rolloverOutputHash for the orderId is set
+│   └── it should write fillRecords at rolloverOutputHash with filler destination dstCstProduced and filledAt of block.timestamp
+└── when the concrete is ExactFillSettler AND the same orderId records a second time
+    └── it should overwrite the prior fillRecords entry in place because Exact is single-participant

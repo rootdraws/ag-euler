@@ -20,5 +20,16 @@
 			"0xbD858DCee56Df1F0CBa44e6F5a469FbfeC0246cd",
 			"0x2ff5F1Ca35f5100226ac58E1BFE5aac56919443B"
 		]
+	},
+	"ag-eth-triad": {
+		"name": "AG ETH / USDC / WBTC",
+		"description": "Cross-margin ETH, USDC, and WBTC markets on Ethereum mainnet. Borrow any of the three against the other two as collateral. Shares the Origin ARM WETH borrow vault. Curated by Alpha Growth.",
+		"entity": ["alphagrowth", "euler"],
+		"url": "https://alphagrowth.io",
+		"vaults": [
+			"0x2ff5F1Ca35f5100226ac58E1BFE5aac56919443B",
+			"0xb639d1B47215d1Bc6E2d33b299b3F386627c0F2b",
+			"0x915104922E6a55B00B7245d56EE950cd591782C2"
+		]
 	}
 }

@@ -1,0 +1,13 @@
+BaseSettler_settlePremium
+├── when amount is zero
+│   └── it should no-op via the ERC-6909 short-circuit and return true
+├── when debitFrom has sufficient balance AND dual-auth passes
+│   └── it should debit via ERC6909.settle, IERC20.safeTransfer to cellar, and emit Settled
+├── when debitFrom balance is less than amount
+│   └── it should revert with InsufficientBalance
+├── when msg.sender is not authorized by debitFrom
+│   └── it should revert with UnauthorizedSettler
+├── when premiumFiller is not authorized by debitFrom
+│   └── it should revert with UnauthorizedPremiumFiller
+└── when the ERC-6909 internal IERC20.safeTransfer reverts
+    └── it should revert with the bubbled transfer error and leave ERC-6909 balance unchanged

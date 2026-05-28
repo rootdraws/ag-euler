@@ -1,0 +1,7 @@
+PartialFillSettler_resolve
+├── when the order is well-formed
+│   ├── it should return two outputs for the rollover and premium legs
+│   ├── it should set minReceived.amount to orderSize multiplied by minPremiumPerShare divided by 1e18
+│   └── it should encode originData byte-exact in fillInstructions
+└── when srcCstToken equals premiumToken
+    └── it should revert with InvalidOrderTokenPair

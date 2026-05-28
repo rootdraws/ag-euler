@@ -1,0 +1,13 @@
+BaseSettler_forwardToFactory
+├── when the factory call succeeds
+│   └── it should return actualRolled to the caller
+├── when the cellar reverts with OverfillCeiling
+│   └── it should bubble the selector unmodified
+├── when the cellar reverts with UnderfillNotAllowed
+│   └── it should bubble the selector unmodified
+├── when the cellar reverts with ZeroRollover
+│   └── it should bubble the selector unmodified
+├── when the cellar reverts with SettlerMismatch
+│   └── it should bubble the selector unmodified
+└── when the cellar reverts with PremiumAlreadyFiredForFiller on phase 1
+    └── it should bubble the selector unmodified

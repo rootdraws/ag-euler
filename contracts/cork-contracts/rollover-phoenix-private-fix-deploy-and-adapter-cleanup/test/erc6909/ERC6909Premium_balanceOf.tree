@@ -1,0 +1,5 @@
+ERC6909Premium_balanceOf
+├── when (owner, tokenId) has never received a deposit
+│   └── it should return zero
+└── when (owner, tokenId) has deposits net of withdrawals and settles
+    └── it should return the net balance

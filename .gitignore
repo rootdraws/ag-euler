@@ -2,6 +2,19 @@
 .env
 .env.local
 .env.*.local
+.env.bak
+.env.*.bak
+*.env.bak
+
+# --- Foundry Keystores / Raw Keys (defense in depth) ---
+**/keystore/
+*.keystore
+*.pem
+*.key
+UTC--*
+secrets.json
+**/private_key
+**/privatekey.txt
 
 # --- AI Config (Local Continue Settings) ---
 .continue/

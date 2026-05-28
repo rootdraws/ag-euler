@@ -12,14 +12,21 @@ git clone --recurse-submodules https://github.com/rootdraws/ag-euler.git
 
 | Partner | Chain | Contracts | Status |
 |---|---|---|---|
-| Cork Protocol | Ethereum (1) | [contracts/cork-contracts/](contracts/cork-contracts/) | Tenderly demo — liquidator redeploy pending |
 | Balancer | Monad (143) | [contracts/balancer-contracts/](contracts/balancer-contracts/) | **Live** |
-| Origin Protocol | Ethereum (1) | [contracts/origin-contracts/](contracts/origin-contracts/) | **Live** |
-| Frax | Base (8453) | [contracts/frax-contracts/](contracts/frax-contracts/) | Deployed — caps pending |
+| Origin Protocol | Ethereum (1) | [contracts/origin-contracts/](contracts/origin-contracts/) | **Live** — needs ETH supply |
+| Frax | Base (8453) | [contracts/frax-contracts/](contracts/frax-contracts/) | Deployed — needs frxUSD supply |
 | Venice (VVV) | Base (8453) | [contracts/venice-contracts/](contracts/venice-contracts/) | **Live** — 3 markets (VVV/USDC/ETH) |
-| ZRO (LayerZero) | Base (8453) | [contracts/zro-contracts/](contracts/zro-contracts/) | **Deployed** — added to Venice cluster |
+| ZRO (LayerZero) | Base (8453) | [contracts/zro-contracts/](contracts/zro-contracts/) | **Live** — added to Venice cluster |
+| AERO | Base (8453) | [contracts/aero-contracts/](contracts/aero-contracts/) | **Live** — added to Venice cluster |
+| VIRTUAL | Base (8453) | [contracts/virtual-contracts/](contracts/virtual-contracts/) | **Live** — added to Venice cluster |
+| BNB cluster | BSC (56) | [contracts/bnb-contracts/](contracts/bnb-contracts/) | **Live** — USDT/BNB cross-margin |
+| AG Mainnet (ETH/USDC/WBTC) | Ethereum (1) | [contracts/mainnet-contracts/](contracts/mainnet-contracts/) | **Live** — extends Origin cluster |
+| AG VVV LP (experimental) | Base (8453) | [contracts/ag-vvv-lp-contracts/](contracts/ag-vvv-lp-contracts/) | Isolated canary — agVVVWETHlp Vault7540 → USDC |
+| Cork Protocol | Ethereum (1) | [contracts/cork-contracts/](contracts/cork-contracts/) | **Standby** — negotiations open |
 
-Frontend: `euler.alphagrowth.io` — managed by Michael (AG webmaster). Source at `frontends/alphagrowth/`.
+Frontend: `euler.alphagrowth.io` — managed by Michael (AG webmaster). Upstream submodule at `frontend/app/`, branded/consolidated layer at `frontends/alphagrowth/`.
+
+AG operational tooling (Safe batches, governance transfers, fee tracker, per-cluster analyses) lives in `ADMIN/`.
 
 ---
 
@@ -28,11 +35,18 @@ Frontend: `euler.alphagrowth.io` — managed by Michael (AG webmaster). Source a
 ```
 AG-Euler/
 ├── contracts/
+│   ├── aero-contracts/         ← AERO collateral, Venice cluster (Base)
+│   │   └── script/             ← 7 scripts + DEPLOYED.md
+│   ├── ag-vvv-lp-contracts/    ← Experimental: USDC borrow vs agVVVWETHlp (Base)
+│   │   ├── script/             ← 7 scripts
+│   │   └── vvv-lp-claude.md
 │   ├── balancer-contracts/     ← Balancer BPT vaults (Monad)
 │   │   ├── src/                ← BalancerBptAdapter
 │   │   ├── script/             ← 12 deployment + admin scripts
 │   │   └── balancer-claude.md
-│   ├── cork-contracts/         ← Cork Protocol (Ethereum mainnet)
+│   ├── bnb-contracts/          ← BNB cluster, USDT/BNB cross-margin (BSC)
+│   │   └── script/             ← 7 scripts + DEPLOYED.md
+│   ├── cork-contracts/         ← Cork Protocol (Ethereum mainnet) — standby
 │   │   ├── src/                ← oracle, hook, liquidator, vault
 │   │   ├── script/             ← 7 deployment scripts + bot/
 │   │   └── cork-claude.md
@@ -40,26 +54,35 @@ AG-Euler/
 │   │   ├── src/ + ichi-oracle-kit/  ← ICHIVaultOracle + keeper
 │   │   ├── script/             ← 8 deployment scripts
 │   │   └── frax-claude.md
+│   ├── mainnet-contracts/      ← AG ETH/USDC/WBTC triad (Ethereum), shares Origin router
+│   │   ├── script/             ← 7 scripts (Safe calldata flow)
+│   │   └── safe-batches/       ← AG Safe batch JSONs
 │   ├── origin-contracts/       ← Origin ARM × WETH (Ethereum mainnet)
 │   │   ├── script/             ← 7 deployment scripts
 │   │   └── origin-arm-euler-spec.md
 │   ├── venice-contracts/       ← Venice VVV/USDC/ETH cluster (Base)
 │   │   └── script/             ← 10 deployment scripts
+│   ├── virtual-contracts/      ← VIRTUAL collateral, Venice cluster (Base)
+│   │   └── script/             ← 7 scripts + DEPLOYED.md
 │   └── zro-contracts/          ← ZRO added to Venice cluster (Base)
 │       └── script/             ← 7 scripts (adapter, IRM, router, vault, wire, config, fee)
+├── frontend/
+│   └── app/                    ← Upstream euler-lite submodule (latest from upstream)
 ├── frontends/
-│   ├── alphagrowth/            ← Consolidated frontend (all partners, feature-flagged)
+│   ├── alphagrowth/            ← Consolidated branded frontend (all partners, feature-flagged)
 │   │   ├── pages/cork-borrow.vue         ← Cork dual-collateral borrow
 │   │   ├── composables/useArmRoute.ts    ← Origin ARM multiply routing
 │   │   ├── composables/useEnsoRoute.ts   ← Balancer BPT multiply routing
 │   │   └── .env                          ← All chains + feature flags
 │   └── labels/
-│       ├── alphagrowth/        ← Consolidated labels (chains 1, 143, 8453)
-│       │   ├── 1/              ← Cork + Origin (Ethereum)
+│       ├── alphagrowth/        ← Consolidated labels (chains 1, 56, 143, 8453)
+│       │   ├── 1/              ← Cork + Origin + AG mainnet triad (Ethereum)
+│       │   ├── 56/             ← BNB cluster (BSC)
 │       │   ├── 143/            ← Balancer (Monad)
-│       │   └── 8453/           ← Frax + Venice + ZRO (Base)
+│       │   └── 8453/           ← Frax + Venice + ZRO + AERO + VIRTUAL (Base)
 │       └── euler-submission/
 │           └── euler-labels/   ← Fork of euler-xyz/euler-labels (official listing PRs)
+├── ADMIN/                      ← Operational tooling: Safe batches, governance transfers, fee tracker, cluster analyses
 ├── reference/                  ← Upstream read-only repos (submodules + clones)
 │   ├── ethereum-vault-connector/
 │   ├── euler-interfaces/       ← Core addresses, ABIs, oracle adapters per chain
@@ -69,8 +92,11 @@ AG-Euler/
 │   ├── euler-vault-scripts/
 │   ├── evk-periphery/
 │   └── ...
+├── compost-contracts/          ← Archived experimental work (infinifi-contracts)
+├── compost-frontend/           ← Archived frontend forks (cork, origin)
 ├── CLAUDE.md                   ← AI context: contracts, labels, integration
 ├── TODO.md                     ← Task tracker (all partners)
+├── pending-markets.md          ← Candidate market research (perp FR arb, Pendle PT)
 ├── new_market.md               ← New market deployment SOP
 └── README.md
 ```

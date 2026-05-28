@@ -1,0 +1,9 @@
+forge-std/=lib/forge-std/src/
+@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/
+cellar/=lib/cellar/src/
+cellar-test/=lib/cellar/test/
+phoenix/=lib/cellar/lib/phoenix/contracts/
+solady/=lib/cellar/lib/solady/src/
+registry/=lib/cellar/lib/registry/src/
+registry-test/=lib/cellar/lib/registry/test/
+evc/=lib/ethereum-vault-connector/src/

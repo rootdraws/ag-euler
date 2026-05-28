@@ -1,0 +1,17 @@
+ExactFillSettler_finaliseAsCancelled
+├── when _hashOrder(order) is not equal to orderId
+│   └── it should revert with DigestMismatch
+├── when status is not Opened
+│   └── it should revert with InvalidOrderStatus
+├── when any fill record exists for the order
+│   └── it should revert with OrderHasFills
+├── when status is Opened AND no fills AND msg.sender equals order.user
+│   └── it should transition status from Opened to Cancelled and emit OrderFinalised with status Cancelled
+├── when status is Opened AND no fills AND msg.sender is not order.user AND cancelSig is valid
+│   └── it should succeed via the gasless UW cancel path
+├── when cancelSig is invalid
+│   └── it should revert with NotMaker
+├── when cancelSig signs a different orderId
+│   └── it should revert with NotMaker
+└── when called after fillDeadline AND status is Opened AND no fills exist
+    └── it should still succeed (cancel is independent of deadline)

@@ -1,0 +1,19 @@
+ExactFillSettler_finaliseAsRefunded
+├── when _hashOrder(order) is not equal to orderId
+│   └── it should revert with DigestMismatch
+├── when block.timestamp is at or before order.fillDeadline
+│   └── it should revert with NotExpired
+├── when orderStatus is None
+│   └── it should revert with InvalidOrderStatus
+├── when orderStatus is Settled
+│   └── it should revert with OrderComplete
+├── when orderStatus is Refunded
+│   └── it should revert with InvalidOrderStatus
+├── when orderStatus is Cancelled
+│   └── it should revert with InvalidOrderStatus
+├── when orderStatus is Opened AND paymentSettled is true
+│   └── it should revert with OrderComplete
+├── when orderStatus is Opened AND rollover leg filled AND paymentSettled is false
+│   └── it should dstCST.safeTransfer the escrowed dstCstProduced to cellar, transition status from Opened to Refunded, and emit OrderFinalised with status Refunded
+└── when orderStatus is Opened AND both legs un-filled
+    └── it should transition status from Opened to Refunded and transfer zero tokens

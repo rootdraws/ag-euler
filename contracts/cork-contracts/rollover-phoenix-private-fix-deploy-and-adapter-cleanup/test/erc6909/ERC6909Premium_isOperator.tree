@@ -1,0 +1,7 @@
+ERC6909Premium_isOperator
+├── when no operator relation has been set
+│   └── it should return false
+├── when setOperator was called with approved true
+│   └── it should return true
+└── when setOperator was called with approved true then approved false
+    └── it should return false

@@ -1,0 +1,64 @@
+{
+  "version": "1.0",
+  "chainId": "130",
+  "createdAt": 1746396000000,
+  "meta": {
+    "name": "AG setFeeReceiver — Unichain vaults (7)",
+    "description": "Set feeReceiver to AG Safe (0x4f894Bfc9481110278C356adE1473eBe2127Fd3C) on the 7 alphagrowth-unichain-market vaults that currently have feeReceiver=0x0. Stops 100% of the 10% interest fee from routing to Euler DAO. The 2 alphagrowth-unichain vaults (erETH-2, eWETH-4) are already configured.",
+    "txBuilderVersion": "1.17.0",
+    "createdFromSafeAddress": "0x4f894Bfc9481110278C356adE1473eBe2127Fd3C",
+    "createdFromOwnerAddress": "",
+    "checksum": "0x0000000000000000000000000000000000000000000000000000000000000000"
+  },
+  "transactions": [
+    {
+      "to": "0x1f3134C3f3f8AdD904B9635acBeFC0eA0D0E1ffC",
+      "value": "0",
+      "data": "0xefdcd9740000000000000000000000004f894bfc9481110278c356ade1473ebe2127fd3c",
+      "contractMethod": null,
+      "contractInputsValues": null
+    },
+    {
+      "to": "0x54ff502df96CD9B9585094EaCd86AAfCe902d06A",
+      "value": "0",
+      "data": "0xefdcd9740000000000000000000000004f894bfc9481110278c356ade1473ebe2127fd3c",
+      "contractMethod": null,
+      "contractInputsValues": null
+    },
+    {
+      "to": "0xe36DA4Ea4D07E54B1029eF26A896A656A3729f86",
+      "value": "0",
+      "data": "0xefdcd9740000000000000000000000004f894bfc9481110278c356ade1473ebe2127fd3c",
+      "contractMethod": null,
+      "contractInputsValues": null
+    },
+    {
+      "to": "0x6eAe95ee783e4D862867C4e0E4c3f4B95AA682Ba",
+      "value": "0",
+      "data": "0xefdcd9740000000000000000000000004f894bfc9481110278c356ade1473ebe2127fd3c",
+      "contractMethod": null,
+      "contractInputsValues": null
+    },
+    {
+      "to": "0xD49181c522eCDB265f0D9C175Cf26FFACE64eAD3",
+      "value": "0",
+      "data": "0xefdcd9740000000000000000000000004f894bfc9481110278c356ade1473ebe2127fd3c",
+      "contractMethod": null,
+      "contractInputsValues": null
+    },
+    {
+      "to": "0x7650D7ae1981f2189d352b0EC743b9099D24086F",
+      "value": "0",
+      "data": "0xefdcd9740000000000000000000000004f894bfc9481110278c356ade1473ebe2127fd3c",
+      "contractMethod": null,
+      "contractInputsValues": null
+    },
+    {
+      "to": "0x5d2511C1EBc795F4394f7f659f693f8C15796485",
+      "value": "0",
+      "data": "0xefdcd9740000000000000000000000004f894bfc9481110278c356ade1473ebe2127fd3c",
+      "contractMethod": null,
+      "contractInputsValues": null
+    }
+  ]
+}

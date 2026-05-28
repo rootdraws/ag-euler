@@ -1,0 +1,27 @@
+PartialFillSettler_finaliseAsRefunded
+├── when _hashOrder(order) is not equal to orderDigest
+│   └── it should revert with DigestMismatch
+├── when block.timestamp is at or before order.fillDeadline
+│   └── it should revert with NotExpired
+├── when orderStatus[orderId] is not Opened
+│   └── it should revert with InvalidOrderStatus
+├── when UW's ERC-1271 smart-wallet policy changed post-signing
+│   └── it should succeed without signature re-verification (liveness)
+├── when for a given filler f.premiumSettled is true
+│   └── it should skip (route via finaliseAsSettled)
+├── when for a given filler f.dstCstProduced is zero
+│   └── it should skip (no rollover-leg)
+├── when for a given filler f.refunded is already true
+│   └── it should skip idempotently
+├── when for a given filler f.finalised is true
+│   └── it should skip (exclusive paths)
+├── for each eligible filler
+│   └── it should set f.refunded to true BEFORE any external call, increment refundedCount, decrement totalDstCstEscrowed, dstCST.safeTransfer f.dstCstProduced to cellar, and emit FillerRefunded
+├── when refundedCount equals participantCount after the loop
+│   └── it should transition orderStatus from Opened to Refunded and emit OrderFinalised with status Refunded
+├── when refundedCount is less than participantCount after the loop
+│   └── it should leave orderStatus as Opened
+├── when entire fillers[] is premium-paid
+│   └── it should transfer zero tokens (all skip)
+└── when called by any caller AND status is Opened
+    └── it should succeed (permissionless keeper-friendly)

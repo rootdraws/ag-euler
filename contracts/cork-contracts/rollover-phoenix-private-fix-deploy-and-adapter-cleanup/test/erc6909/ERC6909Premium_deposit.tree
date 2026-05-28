@@ -1,0 +1,13 @@
+ERC6909Premium_deposit
+├── when token.transferFrom reverts
+│   └── it should revert with the bubbled transferFrom error and leave balance unchanged
+├── when FoT token transferFrom delivers less than amount
+│   └── it should revert with DepositBalanceMismatch and leave balance unchanged
+├── when amount is zero
+│   └── it should no-op
+├── when all preconditions hold
+│   └── it should IERC20.safeTransferFrom msg.sender to address(this), increment balanceOf[to][tokenId] by amount, and emit Transfer from address(0) to to
+└── supportsInterface
+    ├── it should return true for the ERC-165 interface id
+    ├── it should return true for the ERC-6909 interface id
+    └── it should return false for an unsupported interface id

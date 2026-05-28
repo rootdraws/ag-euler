@@ -1,0 +1,61 @@
+ExactFillSettler_fill
+├── when block.timestamp is greater than order.fillDeadline
+│   └── it should revert with FillAfterDeadline
+├── when orderStatus is Settled or Refunded or Cancelled
+│   └── it should revert with OrderInTerminalState
+├── when orderData.allowPartialFills is true
+│   └── it should revert with InconsistentIntent
+├── when orderData.srcCstToken equals orderData.premiumToken
+│   └── it should revert with InvalidOrderTokenPair
+├── when orderData.exclusiveFiller is set AND msg.sender is not that address
+│   └── it should revert with NotExclusiveFiller
+├── when orderData.exclusiveFiller is set AND msg.sender is that address
+│   └── it should accept the fill
+├── when orderData.minFillSize is non-zero AND rollover output.amount is less than minFillSize
+│   └── it should revert with BelowMinFillSize
+├── when orderData.minFillSize is non-zero AND rollover output.amount equals orderSize
+│   └── it should accept the fill
+├── when orderData.minFillSize is non-zero AND caller fills the premium leg with premium output.amount below minFillSize
+│   └── it should admit the premium leg (AS-19 is rollover-leg only)
+├── when collateralAsset decimals are 6 AND rollover output.amount is aligned to the decimal offset
+│   └── it should accept the fill (AS-20 gate admits)
+├── when collateralAsset decimals are 6 AND rollover output.amount is not aligned to the decimal offset
+│   └── it should revert with DecimalTruncates
+├── when collateralAsset decimals are 18 or greater
+│   └── it should be a no-op regardless of rollover output.amount modulo (AS-20 early return)
+├── when fillerData.outputIndex is 0 (rollover leg)
+│   ├── when output.amount is not equal to orderSize
+│   │   └── it should revert with PartialFillNotAllowed
+│   ├── when fillRecords for rolloverOutputHash already set
+│   │   └── it should revert with AlreadyFilled
+│   ├── when intent hash mismatches orderData.cellarIntentHash
+│   │   └── it should revert with IntentNotBoundToOrder
+│   ├── when CellarIntent decodes and hashes to orderData.cellarIntentHash
+│   │   ├── it should forward factory.executeIntentHooks with phase 0 and filler equal to msg.sender
+│   │   ├── it should observe dstCstProduced via dstCST balance delta on the settler within 1-wei tolerance
+│   │   ├── it should record FillRecord with filler msg.sender, dstCstProduced, and filledAt
+│   │   ├── it should pull leftover srcCST from RolloverModule to msg.sender
+│   │   └── it should not transition orderStatus
+│   ├── when dstCstProduced plus 1 is less than fillSize minus leftover
+│   │   └── it should revert with DisproportionateOutput
+│   └── when dstCstProduced exceeds what would fit in uint128
+│       └── it should record FillRecord.dstCstProduced at full uint256 width without narrowing (PR 3 / #53)
+├── when fillerData.outputIndex is 1 (premium leg)
+│   ├── when no rollover fill record exists for the order
+│   │   └── it should revert with PremiumBeforeRollover
+│   ├── when fillRecords for premiumOutputHash already set
+│   │   └── it should revert with AlreadyFilled
+│   ├── when debitFrom has insufficient ERC-6909 balance
+│   │   └── it should revert with InsufficientBalance
+│   ├── when debitFrom does not authorize msg.sender
+│   │   └── it should revert with UnauthorizedSettler
+│   ├── when debitFrom authorizes msg.sender
+│   │   └── it should debit requiredPremium via ERC6909.settle, forward factory.executeIntentHooks with phase 1 and filler equal to the rollover filler, flip paymentSettled to true while leaving orderStatus unchanged, and emit Fill for the premium output
+│   ├── when requiredPremium is zero
+│   │   └── it should short-circuit the ERC-6909 debit but still fire phase-1 hooks and flip paymentSettled
+│   ├── when the cellar phase-1 premiumHooks revert after the ERC-6909 debit
+│   │   └── it should emit PremiumHooksReverted, leave ERC-6909 debit and paymentSettled committed, and not revert (AS-10 / #58)
+│   └── when a reentrant fill is attempted from inside premiumHooks
+│       └── it should revert with ReentrancyGuardReentrantCall
+└── when fillerData.outputIndex is neither 0 nor 1
+    └── it should revert with InvalidOutputIndex

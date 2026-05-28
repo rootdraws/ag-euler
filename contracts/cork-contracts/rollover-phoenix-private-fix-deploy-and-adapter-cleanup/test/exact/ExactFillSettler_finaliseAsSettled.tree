@@ -1,0 +1,17 @@
+ExactFillSettler_finaliseAsSettled
+├── when orderStatus[orderId] is not Opened
+│   └── it should revert with InvalidOrderStatus
+├── when paymentSettled is false
+│   └── it should revert with PaymentNotSettled
+├── when the rollover fillRecord is missing
+│   └── it should revert with InvalidFillRecord
+├── when status is Opened AND both legs filled AND paymentSettled is true
+│   ├── it should transition status from Opened to Settled
+│   ├── it should dstCST.safeTransfer the escrowed amount to fillRecord.destination
+│   └── it should emit OrderFinalised with status Settled
+├── when dstCST.safeTransfer reverts
+│   └── it should still transition to Settled, credit rescueable[orderId][filler] the amount, and emit FillerRescueCredited (blacklist-safe — closes #39)
+├── when called by any msg.sender
+│   └── it should succeed (permissionless)
+└── when the Settled branch reaches the payout
+    └── it should emit OrderAttribution once with fillerSlot == premiumFiller == cellarFiller on the happy path (Task 36 / #47)

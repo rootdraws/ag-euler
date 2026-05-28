@@ -1,0 +1,13 @@
+PartialFillSettler_open
+├── when msg.sender is not order.user
+│   └── it should revert with NotMaker
+├── when srcCstToken equals premiumToken
+│   └── it should revert with InvalidOrderTokenPair
+├── when orderData.allowPartialFills is false
+│   └── it should revert with InconsistentIntent
+├── when status is Settled or Refunded or Cancelled
+│   └── it should revert with InvalidOrderStatus
+├── when status is None and validation passes
+│   └── it should transition status to Opened and emit Open with a fully resolved order
+└── when status is already Opened
+    └── it should no-op idempotently and not emit Open again

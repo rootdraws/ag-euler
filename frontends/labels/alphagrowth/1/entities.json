@@ -4,7 +4,10 @@
 		"logo": "alphagrowth.svg",
 		"description": "DeFi risk curation and vault management.",
 		"url": "https://alphagrowth.io",
-		"addresses": {},
+		"addresses": {
+			"0x501107fe590c8F9b81c00b81867fD19e0d9c0253": "AG Dev Wallet",
+			"0x4f894Bfc9481110278C356adE1473eBe2127Fd3C": "AG Safe"
+		},
 		"social": {
 			"twitter": "",
 			"youtube": "",
